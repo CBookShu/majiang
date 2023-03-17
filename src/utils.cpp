@@ -52,5 +52,14 @@ const char *get_card_name(int idx) {
         "","1D","2D","3D","4D","5D","6D","7D","8D","9D",// 20~29
         "","","","","","JOKER",                         // 30~35
     };
-    return gTable[idx];
+    static const char* gTable_1[] = {
+        "","-1W","-2W","-3W","-4W","-5W","-6W","-7W","-8W","-9W",// 0~9
+        "","-1T","-2T","-3T","-4T","-5T","-6T","-7T","-8T","-9T",// 10~19
+        "","-1D","-2D","-3D","-4D","-5D","-6D","-7D","-8D","-9D",// 20~29
+        "","","","","","JOKER",                         // 30~35
+    };
+    if(idx >= 0) {
+        return gTable[idx];
+    }
+    return gTable_1[-idx];
 }
