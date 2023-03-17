@@ -94,6 +94,10 @@ typedef struct cardsunit {
 }cardsunit;
 
 
+static void ids_add(cardids* c, int id) {
+    c->ids[c->count++] = id;
+}
+
 static void ids2idxs(cardids* c1, cardidxs* c2) {
     std::memset(c2, 0, sizeof(*c2));
     for(int i = 0; i < std::size(c1->ids); ++i) {
@@ -131,6 +135,15 @@ static auto grab_cardsunit_item(cardsunit* us)-> cardsunititem* {
 
 static void pop_cardsunit_item(cardsunit* us) {
     us->units[us->count--].count = 0;
+}
+
+static void print_cardidx(cardidxs* c, std::ostream& os) {
+    for(int i = 0; i < HAND_CARDIDX_LAY; ++i) {
+        for(int j = 0; j < c->idxs[i]; ++j) {
+            os << get_card_name(i);
+        }
+    }
+    os << std::endl;
 }
 
 static void print_cardsunit(cardsunit* us, std::ostream& os) {
