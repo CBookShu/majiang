@@ -176,7 +176,7 @@ void travel_all_hu_nojoker(cardidxs* c, bool (*f)(cardsunit*))
 
 static bool _canhu_7j_backtrace(cardidxs* idx) {
     int joker = idx->idxs[JOKER_INDEX];
-    for (int i = 0; i < HAND_CARDIDX_LAY; ++i) {
+    for (int i = 0; i < HAND_CARDIDX_LAY_NOJOKER; ++i) {
         if(idx->idxs[i] == 0) {
             continue;
         }
@@ -189,6 +189,7 @@ static bool _canhu_7j_backtrace(cardidxs* idx) {
             joker--;
         }
     }
+    assert((joker&0x1)==0);
     return true;
 }
 
@@ -341,7 +342,7 @@ bool canhu(cardidxs *c)
 
 static bool _travel_7j_backtrace(cardidxs* idx, cardsunit* u, bool (*f)(cardsunit *)) {
     int joker = idx->idxs[JOKER_INDEX];
-    for (int i = 0; i < HAND_CARDIDX_LAY; ++i) {
+    for (int i = 0; i < HAND_CARDIDX_LAY_NOJOKER; ++i) {
         if(idx->idxs[i] == 0) {
             continue;
         }
@@ -360,6 +361,11 @@ static bool _travel_7j_backtrace(cardidxs* idx, cardsunit* u, bool (*f)(cardsuni
             cardsunititem* item = grab_cardsunit_item(u);
             init_unititem(item, UNIT_ITEM_JIANG_T, i, -i);
         }
+    }
+    assert((joker & 0x1) ==0);
+    for (int i = 0; i < joker / 2; ++i) {
+        cardsunititem* item = grab_cardsunit_item(u);
+        init_unititem(item, UNIT_ITEM_JIANG_T, JOKER_INDEX, JOKER_INDEX);
     }
     f(u);
     return true;
@@ -421,7 +427,7 @@ static bool _travel_4m1j_backtrace(cardidxs* idx,bool&& jiang,int b,cardsunit* u
         idx->idxs[JOKER_INDEX] -= 2;
         idx->idxs[i] -= 1;
         idx->count -= 3;
-        init_unititem(grab_cardsunit_item(u), UNIT_ITEM_KEZI_T, i,i,-i);
+        init_unititem(grab_cardsunit_item(u), UNIT_ITEM_KEZI_T, i,-i,-i);
         bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i,u,f);
         pop_cardsunit_item(u);
         idx->count += 3;
@@ -436,7 +442,7 @@ static bool _travel_4m1j_backtrace(cardidxs* idx,bool&& jiang,int b,cardsunit* u
         idx->idxs[i] -= 2;
         idx->count -= 2;
         jiang = true;
-        init_unititem(grab_cardsunit_item(u), UNIT_ITEM_JIANG_T, i,-i);
+        init_unititem(grab_cardsunit_item(u), UNIT_ITEM_JIANG_T, i, i);
         bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i,u,f);
         pop_cardsunit_item(u);
         jiang = false;
@@ -704,11 +710,12 @@ void test_travel_1() {
     };
     struct cardidxs idxs;
     std::memset(&idxs, 0, sizeof(idxs));
-    // 2W3W,4W4W,8W8W,2T3T,6T7T,4JOKER
-    idxs_add(&idxs, JOKER_INDEX, 4);idxs_add(&idxs, 2, 1);idxs_add(&idxs, 3, 1);
-    idxs_add(&idxs, 4, 2);idxs_add(&idxs, 8, 2);
-    idxs_add(&idxs, 12, 1);idxs_add(&idxs, 13, 1);
-    idxs_add(&idxs, 16, 1);idxs_add(&idxs, 17, 1);
+    // 1W1W4W5W6W5T5T5T1D9DJOKERJOKERJOKERJOKER
+    idxs_add(&idxs, JOKER_INDEX, 4);
+    idxs_add(&idxs, 1, 2);idxs_add(&idxs, 4, 1);
+    idxs_add(&idxs, 5, 1);idxs_add(&idxs, 6, 1);
+    idxs_add(&idxs, 15, 3);idxs_add(&idxs, 21, 1);
+    idxs_add(&idxs, 29, 1);
     travel_all_hu(&idxs, f);
 }
 
@@ -728,8 +735,8 @@ void test_rnd_travel() {
     while(true) {
         std::shuffle(std::begin(cards), std::end(cards), e);
 
-        cardids ids;
-        std::memset(&ids, 0, sizeof(ids));
+        cardids ids; ids.count = 0;
+        std::memset(&ids.ids, INVALID_ID, sizeof(ids.ids));
         for(int i = 0; i < HAND_CARDS_COUNT-3; ++i) {
             ids_add(&ids, cards[i]);
         }
@@ -738,15 +745,17 @@ void test_rnd_travel() {
         idxs_add(&idx, JOKER_INDEX, 3);
         auto now = std::chrono::system_clock::now();
         if(canhu(&idx)) {
+            if (idx.count != 14) {
+                std::cout << "BAD" << std::endl;
+            }
             print_cardidx(&idx, std::cout);
             travel_all_hu(&idx, f);
             auto after = std::chrono::system_clock::now();
             auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(after-now).count();
             if(diff > 2) {
-                printf("cost %dms\r\n", diff);
+                printf("cost %lldms\r\n", diff);
             }
             if(++time > 5) {
-                std::cout << "calc all < 2ms" << std::endl;
                 break;
             }
         }

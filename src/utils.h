@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstring>
 #include <array>
+#include <cassert>
 
 /*
     114 cardid:
@@ -28,7 +29,7 @@
 #define TOAL_CARDS                  114
 #define HAND_CARDS_COUNT            14
 #define HAND_CARDIDX_LAY            36
-#define HAND_CARDIDX_LAY_NOJOKER    29
+#define HAND_CARDIDX_LAY_NOJOKER    30
 #define UNIT_CARDS_MAX_COUNT        4
 #define UNIT_MAX_COUNT              7
 
@@ -130,6 +131,7 @@ static void init_cardsunit(cardsunit* us) {
 }
 
 static auto grab_cardsunit_item(cardsunit* us)-> cardsunititem* {
+    assert(us->count != std::size(us->units));
     return &us->units[us->count++];
 }
 
