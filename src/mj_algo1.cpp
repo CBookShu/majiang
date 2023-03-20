@@ -838,13 +838,13 @@ void test_rnd_travel() {
 
 void test_algo1()
 {
-    // TEST_CALL(test_canhu_nojoker);
-    // TEST_CALL(test_travel_all_hu_nojoker);
-    // TEST_CALL(test_rnd_travel_nojoker);
+     TEST_CALL(test_canhu_nojoker);
+     TEST_CALL(test_travel_all_hu_nojoker);
+     TEST_CALL(test_rnd_travel_nojoker);
     
 
-    // TEST_CALL(test_canhu);
-    // TEST_CALL(test_travel_all_hu);
+     TEST_CALL(test_canhu);
+     TEST_CALL(test_travel_all_hu);
     TEST_CALL(test_travel_1);
     TEST_CALL(test_rnd_travel);
 }
