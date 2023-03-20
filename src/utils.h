@@ -30,10 +30,11 @@
 #define HAND_CARDS_COUNT            14
 #define HAND_CARDIDX_LAY            36
 #define HAND_CARDIDX_LAY_NOJOKER    30
+#define TOTAL_CARD_VALUE            28// 1W~9W,1T~9T,1D~9D,JOKER
 #define UNIT_CARDS_MAX_COUNT        4
 #define UNIT_MAX_COUNT              7
 
-#define INVALID_ID                  -1
+#define INVALID_ID                  (std::numeric_limits<int>::min())
 #define SHAPE_WAN                   0
 #define SHAPE_TIAO                  1
 #define SHAPE_DONG                  2
@@ -94,6 +95,12 @@ typedef struct cardsunit {
     int count;
 }cardsunit;
 
+static void ids_init(cardids* c) {
+    c->count = 0;
+    for (auto& n : c->ids) {
+        n = INVALID_ID;
+    }
+}
 
 static void ids_add(cardids* c, int id) {
     c->ids[c->count++] = id;
@@ -101,9 +108,9 @@ static void ids_add(cardids* c, int id) {
 
 static void ids2idxs(cardids* c1, cardidxs* c2) {
     std::memset(c2, 0, sizeof(*c2));
-    for(int i = 0; i < std::size(c1->ids); ++i) {
-        if(c1->ids[i] != INVALID_ID) {
-            c2->idxs[get_card_idx(c1->ids[i])]++;
+    for (auto n : c1->ids) {
+        if (n != INVALID_ID) {
+            c2->idxs[get_card_idx(n)]++;
             c2->count++;
         }
     }
@@ -116,13 +123,15 @@ static void idxs_add(cardidxs* c, int idx, int add) {
 template <typename...Args>
 static void init_unititem(cardsunititem* u, int t, Args&&... is) {
     u->type = t;
-    std::memset(u->ids, INVALID_ID, std::size(u->ids)*sizeof(int));
     int i = 0;
     auto f = [&](auto v){
         u->ids[i++] = v;
     };
     (..., f(is));
     u->count = i;
+    for (; i < std::size(u->ids); ++i) {
+        u->ids[i] = INVALID_ID;
+    }
 }
 
 static void init_cardsunit(cardsunit* us) {

@@ -198,6 +198,8 @@ static bool _canhu_4m1j_backtrace(cardidxs* idx, int b, bool&& jiang) {
         return jiang;
     }
     
+    int joker = idx->idxs[JOKER_INDEX];
+
     int i = 0;
     for (i = 0; i < HAND_CARDIDX_LAY_NOJOKER; ++i) {
         if(idx->idxs[i] > 0) {
@@ -209,7 +211,30 @@ static bool _canhu_4m1j_backtrace(cardidxs* idx, int b, bool&& jiang) {
         return true;
     }
 
-    int joker = idx->idxs[JOKER_INDEX];
+    int value = i % 10;
+    if(joker > 0) {
+        if(value >= 3) {
+            idx->idxs[JOKER_INDEX] -= 1;
+            idx->idxs[i - 2] += 1;
+            bool ok = _canhu_4m1j_backtrace(idx,i,std::forward<bool>(jiang));
+            idx->idxs[JOKER_INDEX] += 1;
+            idx->idxs[i - 2] -= 1;
+            if(ok) {
+                return ok;
+            }
+        }
+        if(value >= 2) {
+            idx->idxs[JOKER_INDEX] -= 1;
+            idx->idxs[i - 1] += 1;
+            bool ok = _canhu_4m1j_backtrace(idx,i,std::forward<bool>(jiang));
+            idx->idxs[JOKER_INDEX] += 1;
+            idx->idxs[i - 1] -= 1;
+            if(ok) {
+                return ok;
+            }
+        }
+    }
+
     // 刻字
     if(idx->idxs[i] >= 3) {
         idx->idxs[i] -= 3;
@@ -274,7 +299,6 @@ static bool _canhu_4m1j_backtrace(cardidxs* idx, int b, bool&& jiang) {
     }
 
     // 顺子
-    int value = i % 10;
     if(value <= 7 && idx->idxs[i + 1] > 0 && idx->idxs[i + 2] > 0) {
         idx->idxs[i] -= 1;
         idx->idxs[i+1] -= 1;
@@ -348,7 +372,7 @@ static bool _travel_7j_backtrace(cardidxs* idx, cardsunit* u, bool (*f)(cardsuni
         }
         
         int count = idx->idxs[i];
-        for(int i = 0; i < count / 2; ++i) {
+        for(int j = 0; j < count / 2; ++j) {
             cardsunititem* item = grab_cardsunit_item(u);
             init_unititem(item, UNIT_ITEM_JIANG_T, i, i);
         }
@@ -376,6 +400,7 @@ static bool _travel_4m1j_backtrace(cardidxs* idx,bool&& jiang,int b,cardsunit* u
         return f(u);
     }
     
+    int joker = idx->idxs[JOKER_INDEX];
     int i = 0;
     for (i = 0; i < HAND_CARDIDX_LAY_NOJOKER; ++i) {
         if(idx->idxs[i] > 0) {
@@ -392,10 +417,41 @@ static bool _travel_4m1j_backtrace(cardidxs* idx,bool&& jiang,int b,cardsunit* u
         if(count%3==2) {
             init_unititem(grab_cardsunit_item(u), UNIT_ITEM_JIANG_T, JOKER_INDEX, JOKER_INDEX);
         }
-        return f(u);
+        bool ok = f(u);
+
+        for (int i = 0; i < count / 3; ++i) {
+            pop_cardsunit_item(u);
+        }
+        assert(count % 3 == 2 || count % 3 == 0);
+        if (count % 3 == 2) {
+            pop_cardsunit_item(u);
+        }
+        return ok;
     }
 
-    int joker = idx->idxs[JOKER_INDEX];
+    int value = i % 10;
+    if(joker > 0) {
+        if(value >= 3) {
+            idx->idxs[JOKER_INDEX] -= 1;
+            idx->idxs[i - 2] += 1;
+            bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i-2,u,f);
+            idx->idxs[JOKER_INDEX] += 1;
+            idx->idxs[i - 2] -= 1;
+            if(ok) {
+                return ok;
+            }
+        }
+        if(value >= 2) {
+            idx->idxs[JOKER_INDEX] -= 1;
+            idx->idxs[i - 1] += 1;
+            bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i-1,u,f);
+            idx->idxs[JOKER_INDEX] += 1;
+            idx->idxs[i - 1] -= 1;
+            if(ok) {
+                return ok;
+            }
+        }
+    }
     // 刻字
     if(idx->idxs[i] >= 3) {
         idx->idxs[i] -= 3;
@@ -470,7 +526,6 @@ static bool _travel_4m1j_backtrace(cardidxs* idx,bool&& jiang,int b,cardsunit* u
     }
 
     // 顺子
-    int value = i % 10;
     if(value <= 7 && idx->idxs[i + 1] > 0 && idx->idxs[i + 2] > 0) {
         idx->idxs[i] -= 1;
         idx->idxs[i+1] -= 1;
@@ -685,6 +740,8 @@ void test_travel_all_hu() {
     idxs_add(&idxs, 4, 3);idxs_add(&idxs, 8, 2);
     idxs_add(&idxs, 11, 1);idxs_add(&idxs, 12, 1);idxs_add(&idxs, 13, 1);
     idxs_add(&idxs, 16, 1);idxs_add(&idxs, 17, 1);idxs_add(&idxs, 18, 1);
+    std::cout << "begin calc idx:";
+    print_cardidx(&idxs, std::cout);
     travel_all_hu(&idxs, f);
 
     std::memset(&idxs, 0, sizeof(idxs));
@@ -692,6 +749,8 @@ void test_travel_all_hu() {
     idxs_add(&idxs, 1, 2);idxs_add(&idxs, 2, 2);idxs_add(&idxs, 3, 2);
     idxs_add(&idxs, 4, 2);idxs_add(&idxs, 17, 3);idxs_add(&idxs, 19, 2);
     idxs_add(&idxs, JOKER_INDEX, 1);
+    std::cout << "begin calc idx:";
+    print_cardidx(&idxs, std::cout);
     travel_all_hu(&idxs, f);
 
     std::memset(&idxs, 0, sizeof(idxs));
@@ -699,6 +758,8 @@ void test_travel_all_hu() {
     idxs_add(&idxs, 1, 3);idxs_add(&idxs, 2, 2);idxs_add(&idxs, 3, 3);
     idxs_add(&idxs, 7, 3);idxs_add(&idxs, 8, 1);idxs_add(&idxs, 9, 1);
     idxs_add(&idxs, JOKER_INDEX, 1);
+    std::cout << "begin calc idx:";
+    print_cardidx(&idxs, std::cout);
     travel_all_hu(&idxs, f);
 }
 
@@ -716,50 +777,62 @@ void test_travel_1() {
     idxs_add(&idxs, 5, 1);idxs_add(&idxs, 6, 1);
     idxs_add(&idxs, 15, 3);idxs_add(&idxs, 21, 1);
     idxs_add(&idxs, 29, 1);
+    //travel_all_hu(&idxs, f);
+
+    std::memset(&idxs, 0, sizeof(idxs));
+    // 3W3W2T3T4T6D6D8D9D 5JK
+    idxs_add(&idxs, JOKER_INDEX, 5);
+    idxs_add(&idxs, 3, 2); idxs_add(&idxs, 12, 1);
+    idxs_add(&idxs, 13, 1); idxs_add(&idxs, 14, 1);
+    idxs_add(&idxs, 26, 2); idxs_add(&idxs, 28, 1);
+    idxs_add(&idxs, 29, 1);
     travel_all_hu(&idxs, f);
 }
 
 void test_rnd_travel() {
     bool (*f)(cardsunit*) = nullptr;
     f = [](cardsunit* u){
-        print_cardsunit(u, std::cout);
+        // print_cardsunit(u, std::cout);
         return false;
     };
     std::default_random_engine e(std::random_device{}());
+    std::uniform_int_distribution<int> u(0, 6);
     int cards[TOAL_CARDS];
     for(int i = 0; i < TOAL_CARDS; ++i) {
         cards[i] = i;
     }
 
     int time = 0;
+    int big_cost_time = 0;
     while(true) {
         std::shuffle(std::begin(cards), std::end(cards), e);
 
-        cardids ids; ids.count = 0;
-        std::memset(&ids.ids, INVALID_ID, sizeof(ids.ids));
-        for(int i = 0; i < HAND_CARDS_COUNT-3; ++i) {
+        int joker_count = u(e);
+        cardids ids; 
+        ids_init(&ids);
+        for(int i = 0; i < HAND_CARDS_COUNT- joker_count; ++i) {
             ids_add(&ids, cards[i]);
         }
         cardidxs idx;
         ids2idxs(&ids, &idx);
-        idxs_add(&idx, JOKER_INDEX, 3);
+        idxs_add(&idx, JOKER_INDEX, joker_count);
         auto now = std::chrono::system_clock::now();
         if(canhu(&idx)) {
-            if (idx.count != 14) {
-                std::cout << "BAD" << std::endl;
-            }
-            print_cardidx(&idx, std::cout);
+            //print_cardidx(&idx, std::cout);
             travel_all_hu(&idx, f);
             auto after = std::chrono::system_clock::now();
             auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(after-now).count();
             if(diff > 2) {
-                printf("cost %lldms\r\n", diff);
+                std::cout << "cost " << diff << "ms" << std::endl;
+                big_cost_time++;
             }
-            if(++time > 5) {
+            if(++time > 50000) {
                 break;
-            }
+            } 
         }
     }
+    std::cout << "total hu times:" << time-1 << std::endl;
+    std::cout << "big cost times:" << big_cost_time << std::endl;
 }
 
 

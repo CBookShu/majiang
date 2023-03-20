@@ -17,4 +17,6 @@ bool canhu(cardidxs* c);
 
 void travel_all_hu(cardidxs* c, bool (*f)(cardsunit*));
 
+
+
 void test_algo1();
