@@ -13,4 +13,9 @@
   "directory": "/home/cbookshu/majiang",
   "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-O0", "-std=c++17", "-o", "build/.objs/majiang/linux/x86_64/debug/src/main.cpp.o", "src/main.cpp"],
   "file": "src/main.cpp"
+},
+{
+  "directory": "/home/cbookshu/majiang",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-O0", "-std=c++17", "-o", "build/.objs/majiang/linux/x86_64/debug/src/mj_algo2.cpp.o", "src/mj_algo2.cpp"],
+  "file": "src/mj_algo2.cpp"
 }]

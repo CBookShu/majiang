@@ -13,3 +13,4 @@
     auto diff  = std::chrono::duration_cast<std::chrono::milliseconds>(e-b).count();\
     std::cout << "calc "<< #f << "end  cost:" << diff << "ms" << std::endl;\
 }while(0)
+

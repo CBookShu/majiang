@@ -1,7 +1,5 @@
 #pragma once
-#include "utils.h"
-/*
-    缓存计算方式
+#include "mj_algo2_detail.h"
 
 
-*/
+void test_algo2();
