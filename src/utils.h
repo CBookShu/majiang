@@ -17,63 +17,63 @@
     id: 72~107 筒:
     72~81     1筒~9筒
     ...
-    108~113    财神
+    108~114 东南西北中发白
+    115~121 东南西北中发白
+    122~128 东南西北中发白
+    128~135 东南西北中发白
 
     36 cardidx:
-    1 ~ 9:          1万~9万
-    11 ~ 19:        1条~9条
-    21 ~ 29:        1筒~9筒
-    35:             6个财神一样
+    0~8     万,
+    9~17    条,
+    18~26   筒,
+    27~33   风板,
+    34      财神,
+    toal: 35
 */
 
-#define TOAL_CARDS                  114
+#define TOAL_CARDS                  135
+#define TOAL_CARDS_NOJOKER          132
 #define HAND_CARDS_COUNT            14
-#define HAND_CARDIDX_LAY            36
-#define HAND_CARDIDX_LAY_NOJOKER    30
-#define TOTAL_CARD_VALUE            28// 1W~9W,1T~9T,1D~9D,JOKER
+#define HAND_CARDIDX_LAY            35
+#define HAND_CARDIDX_LAY_NOJOKER    34
+#define HAND_CARDIDX_LAY_FENGSTART  27
 #define UNIT_CARDS_MAX_COUNT        4
 #define UNIT_MAX_COUNT              7
 
-#define INVALID_ID                  (std::numeric_limits<int>::min())
+#define W(n)    (n-1)
+#define T(n)    (9+n-1)
+#define D(n)    (18+n-1)
+#define F(n)    (27+n-1)
+
+
 #define SHAPE_WAN                   0
 #define SHAPE_TIAO                  1
 #define SHAPE_DONG                  2
-#define SHAPE_JOKER                 3
+#define SHAPE_FENG                  3
+#define SHAPE_JOKER                 4
 #define ONE_COLOR_COUNT             36
-#define JOKER_INDEX                 35         
+#define JOKER_INDEX                 34         
 
 // 获取牌id的花色
-int get_card_shape(int id);
-
-int get_card_shape_byidx(int idx);
+int get_card_shape_byidx(char idx);
 
 // 获取牌面值
-int get_card_value(int id);
-
-int get_card_value_byidx(int idx);
-
-// 获取牌idx
-int get_card_idx(int id);
+int get_card_value_byidx(char idx);
 
 // 获取牌的名字
-const char* get_shape_name(int shape);
+const char* get_shape_name(char shape);
 
-const char* get_card_name(int idx);
+const char* get_card_name(char idx);
 
-
-typedef struct cardids {
-    int ids[HAND_CARDS_COUNT];
-    int count;
-}cardids;
 
 typedef struct cardidxs {
-    int idxs[HAND_CARDIDX_LAY];
-    int count;
+    char idxs[HAND_CARDIDX_LAY];
+    char count;
 }cardidxs;
 
 typedef struct cardsunititem {
-    int ids[UNIT_CARDS_MAX_COUNT];
-    int count;
+    char ids[UNIT_CARDS_MAX_COUNT];
+    char count;
 #define UNIT_ITEM_UNKNOWN_T     0
 // 刻字 三张一样的 1W1W1W 
 #define UNIT_ITEM_KEZI_T        1
@@ -87,51 +87,27 @@ typedef struct cardsunititem {
 #define UNIT_ITEM_KAN_T         6
 // 单 1张牌
 #define UNIT_ITEM_DAN_T         7
-    int type;
+    char type;
 }cardsunititem;
 
 typedef struct cardsunit {
     struct cardsunititem units[UNIT_MAX_COUNT];
-    int count;
+    char count;
 }cardsunit;
 
-static void ids_init(cardids* c) {
-    c->count = 0;
-    for (auto& n : c->ids) {
-        n = INVALID_ID;
-    }
-}
-
-static void ids_add(cardids* c, int id) {
-    c->ids[c->count++] = id;
-}
-
-static void ids2idxs(cardids* c1, cardidxs* c2) {
-    std::memset(c2, 0, sizeof(*c2));
-    for (auto n : c1->ids) {
-        if (n != INVALID_ID) {
-            c2->idxs[get_card_idx(n)]++;
-            c2->count++;
-        }
-    }
-}
-
-static void idxs_add(cardidxs* c, int idx, int add) {
+static void idxs_add(cardidxs* c, char idx, char add) {
     (c)->idxs[idx]+=add;(c)->count+=add;
 }
 
 template <typename...Args>
-static void init_unititem(cardsunititem* u, int t, Args&&... is) {
+static void init_unititem(cardsunititem* u, char t, Args&&... is) {
     u->type = t;
-    int i = 0;
+    char i = 0;
     auto f = [&](auto v){
         u->ids[i++] = v;
     };
     (..., f(is));
     u->count = i;
-    for (; i < std::size(u->ids); ++i) {
-        u->ids[i] = INVALID_ID;
-    }
 }
 
 static void init_cardsunit(cardsunit* us) {

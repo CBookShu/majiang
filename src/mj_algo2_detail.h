@@ -24,3 +24,8 @@ static void cardskey_2idx(cards_key k, int shape, cardidxs* c) {
         c->count += n;
     }
 }
+
+struct MJCacheConfigDefault {
+    static const int MJ_HAND_CARDS_COUNT = 14;      //14 张牌
+    static const int MJ_LAYOUT_NUM = 34;            //
+};

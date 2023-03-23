@@ -38,22 +38,25 @@ static bool _canhu_4m1j_backtrace_nj(cardidxs* idx, int b, bool&& jiang) {
             return ok;
         }
     }
-    // 顺子
-    int value = i % 10;
-    if(value <= 7 && idx->idxs[i + 1] > 0 && idx->idxs[i + 2] > 0) {
-        idx->idxs[i] -= 1;
-        idx->idxs[i+1] -= 1;
-        idx->idxs[i+2] -= 1;
-        idx->count -= 3;
-        bool ok = _canhu_4m1j_backtrace_nj(idx,i, std::forward<bool>(jiang));
-        idx->count += 3;
-        idx->idxs[i] += 1;
-        idx->idxs[i+1] += 1;
-        idx->idxs[i+2] += 1;
-        if(ok) {
-            return ok;
-        }
-    }   
+    // 顺子[风板不能组成顺子]
+    if(i < HAND_CARDIDX_LAY_FENGSTART) {
+        int value = get_card_value_byidx(i);
+        if(value <= 7 && idx->idxs[i + 1] > 0 && idx->idxs[i + 2] > 0) {
+            idx->idxs[i] -= 1;
+            idx->idxs[i+1] -= 1;
+            idx->idxs[i+2] -= 1;
+            idx->count -= 3;
+            bool ok = _canhu_4m1j_backtrace_nj(idx,i, std::forward<bool>(jiang));
+            idx->count += 3;
+            idx->idxs[i] += 1;
+            idx->idxs[i+1] += 1;
+            idx->idxs[i+2] += 1;
+            if(ok) {
+                return ok;
+            }
+        }   
+    }
+    
     return false;
 }
 
@@ -116,21 +119,23 @@ static bool _travel_4m1j_backtrace_nj(cardidxs* idx, bool&& jiang, int b, cardsu
         }
     }
     // 顺子
-    int value = i % 10;
-    if(value <= 7 && idx->idxs[i + 1] > 0 && idx->idxs[i + 2] > 0) {
-        idx->idxs[i] -= 1;
-        idx->idxs[i+1] -= 1;
-        idx->idxs[i+2] -= 1;
-        idx->count -= 3;
-        init_unititem(grab_cardsunit_item(u), UNIT_ITEM_JIANG_T, i, i+1,i+2);
-        bool ok = _travel_4m1j_backtrace_nj(idx, std::forward<bool>(jiang), i, u, f);
-        pop_cardsunit_item(u);
-        idx->count += 3;
-        idx->idxs[i] += 1;
-        idx->idxs[i+1] += 1;
-        idx->idxs[i+2] += 1;
-        if(ok) {
-            return ok;
+    if(i < HAND_CARDIDX_LAY_FENGSTART) {
+        int value = get_card_value_byidx(i);
+        if(value <= 7 && idx->idxs[i + 1] > 0 && idx->idxs[i + 2] > 0) {
+            idx->idxs[i] -= 1;
+            idx->idxs[i+1] -= 1;
+            idx->idxs[i+2] -= 1;
+            idx->count -= 3;
+            init_unititem(grab_cardsunit_item(u), UNIT_ITEM_JIANG_T, i, i+1,i+2);
+            bool ok = _travel_4m1j_backtrace_nj(idx, std::forward<bool>(jiang), i, u, f);
+            pop_cardsunit_item(u);
+            idx->count += 3;
+            idx->idxs[i] += 1;
+            idx->idxs[i+1] += 1;
+            idx->idxs[i+2] += 1;
+            if(ok) {
+                return ok;
+            }
         }
     }
     return false;
@@ -211,7 +216,7 @@ static bool _canhu_4m1j_backtrace(cardidxs* idx, int b, bool&& jiang) {
         return true;
     }
 
-    int value = i % 10;
+    int value = get_card_value_byidx(i);
     if(joker > 0) {
         if(value >= 3) {
             idx->idxs[JOKER_INDEX] -= 1;
@@ -299,60 +304,62 @@ static bool _canhu_4m1j_backtrace(cardidxs* idx, int b, bool&& jiang) {
     }
 
     // 顺子
-    if(value <= 7 && idx->idxs[i + 1] > 0 && idx->idxs[i + 2] > 0) {
-        idx->idxs[i] -= 1;
-        idx->idxs[i+1] -= 1;
-        idx->idxs[i+2] -= 1;
-        idx->count -= 3;
-        bool ok = _canhu_4m1j_backtrace(idx,i, std::forward<bool>(jiang));
-        idx->count += 3;
-        idx->idxs[i] += 1;
-        idx->idxs[i+1] += 1;
-        idx->idxs[i+2] += 1;
-        if(ok) {
-            return ok;
-        }
-    }
-    if(value <= 7 && joker > 0)
-    {
-        if(idx->idxs[i+1]==0 && idx->idxs[i+2]!=0) {
+    if(i < HAND_CARDIDX_LAY_FENGSTART) {
+        if(value <= 7 && idx->idxs[i + 1] > 0 && idx->idxs[i + 2] > 0) {
             idx->idxs[i] -= 1;
-            idx->idxs[JOKER_INDEX] -= 1;
+            idx->idxs[i+1] -= 1;
             idx->idxs[i+2] -= 1;
             idx->count -= 3;
             bool ok = _canhu_4m1j_backtrace(idx,i, std::forward<bool>(jiang));
             idx->count += 3;
             idx->idxs[i] += 1;
-            idx->idxs[JOKER_INDEX] += 1;
+            idx->idxs[i+1] += 1;
             idx->idxs[i+2] += 1;
             if(ok) {
                 return ok;
             }
         }
-        if(idx->idxs[i+1]!=0&&idx->idxs[i+2]==0) {
-            idx->idxs[i] -= 1;
-            idx->idxs[i+1] -= 1;
-            idx->idxs[JOKER_INDEX] -= 1;
-            idx->count -= 3;
-            bool ok = _canhu_4m1j_backtrace(idx,i, std::forward<bool>(jiang));
-            idx->count += 3;
-            idx->idxs[i] += 1;
-            idx->idxs[i+1] += 1;
-            idx->idxs[JOKER_INDEX] += 1;
-            if(ok) {
-                return ok;
+        if(value <= 7 && joker > 0)
+        {
+            if(idx->idxs[i+1]==0 && idx->idxs[i+2]!=0) {
+                idx->idxs[i] -= 1;
+                idx->idxs[JOKER_INDEX] -= 1;
+                idx->idxs[i+2] -= 1;
+                idx->count -= 3;
+                bool ok = _canhu_4m1j_backtrace(idx,i, std::forward<bool>(jiang));
+                idx->count += 3;
+                idx->idxs[i] += 1;
+                idx->idxs[JOKER_INDEX] += 1;
+                idx->idxs[i+2] += 1;
+                if(ok) {
+                    return ok;
+                }
             }
-        }
-        if(idx->idxs[i+1]==0&&idx->idxs[i+2]==0&&joker>=2) {
-            idx->idxs[i] -= 1;
-            idx->idxs[JOKER_INDEX] -= 2;
-            idx->count -= 3;
-            bool ok = _canhu_4m1j_backtrace(idx,i, std::forward<bool>(jiang));
-            idx->count += 3;
-            idx->idxs[i] += 1;
-            idx->idxs[JOKER_INDEX] += 2;
-            if(ok) {
-                return ok;
+            if(idx->idxs[i+1]!=0&&idx->idxs[i+2]==0) {
+                idx->idxs[i] -= 1;
+                idx->idxs[i+1] -= 1;
+                idx->idxs[JOKER_INDEX] -= 1;
+                idx->count -= 3;
+                bool ok = _canhu_4m1j_backtrace(idx,i, std::forward<bool>(jiang));
+                idx->count += 3;
+                idx->idxs[i] += 1;
+                idx->idxs[i+1] += 1;
+                idx->idxs[JOKER_INDEX] += 1;
+                if(ok) {
+                    return ok;
+                }
+            }
+            if(idx->idxs[i+1]==0&&idx->idxs[i+2]==0&&joker>=2) {
+                idx->idxs[i] -= 1;
+                idx->idxs[JOKER_INDEX] -= 2;
+                idx->count -= 3;
+                bool ok = _canhu_4m1j_backtrace(idx,i, std::forward<bool>(jiang));
+                idx->count += 3;
+                idx->idxs[i] += 1;
+                idx->idxs[JOKER_INDEX] += 2;
+                if(ok) {
+                    return ok;
+                }
             }
         }
     }
@@ -429,7 +436,7 @@ static bool _travel_4m1j_backtrace(cardidxs* idx,bool&& jiang,int b,cardsunit* u
         return ok;
     }
 
-    int value = i % 10;
+    int value = get_card_value_byidx(i);
     if(joker > 0) {
         if(value >= 3) {
             idx->idxs[JOKER_INDEX] -= 1;
@@ -526,68 +533,70 @@ static bool _travel_4m1j_backtrace(cardidxs* idx,bool&& jiang,int b,cardsunit* u
     }
 
     // 顺子
-    if(value <= 7 && idx->idxs[i + 1] > 0 && idx->idxs[i + 2] > 0) {
-        idx->idxs[i] -= 1;
-        idx->idxs[i+1] -= 1;
-        idx->idxs[i+2] -= 1;
-        idx->count -= 3;
-        init_unititem(grab_cardsunit_item(u), UNIT_ITEM_SHUN_T, i,i+1,i+2);
-        bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i,u,f);
-        pop_cardsunit_item(u);
-        idx->count += 3;
-        idx->idxs[i] += 1;
-        idx->idxs[i+1] += 1;
-        idx->idxs[i+2] += 1;
-        if(ok) {
-            return ok;
-        }
-    }
-    if(value <= 7 && joker > 0)
-    {
-        if(idx->idxs[i+1]==0 && idx->idxs[i+2]!=0) {
-            idx->idxs[i] -= 1;
-            idx->idxs[JOKER_INDEX] -= 1;
-            idx->idxs[i+2] -= 1;
-            idx->count -= 3;
-            init_unititem(grab_cardsunit_item(u), UNIT_ITEM_SHUN_T, i,-(i+1),i+2);
-            bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i,u,f);
-            pop_cardsunit_item(u);
-            idx->count += 3;
-            idx->idxs[i] += 1;
-            idx->idxs[JOKER_INDEX] += 1;
-            idx->idxs[i+2] += 1;
-            if(ok) {
-                return ok;
-            }
-        }
-        if(idx->idxs[i+1]!=0&&idx->idxs[i+2]==0) {
+    if(i < HAND_CARDIDX_LAY_FENGSTART) {
+        if(value <= 7 && idx->idxs[i + 1] > 0 && idx->idxs[i + 2] > 0) {
             idx->idxs[i] -= 1;
             idx->idxs[i+1] -= 1;
-            idx->idxs[JOKER_INDEX] -= 1;
+            idx->idxs[i+2] -= 1;
             idx->count -= 3;
-            init_unititem(grab_cardsunit_item(u), UNIT_ITEM_SHUN_T, i,i+1,-(i+2));
+            init_unititem(grab_cardsunit_item(u), UNIT_ITEM_SHUN_T, i,i+1,i+2);
             bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i,u,f);
             pop_cardsunit_item(u);
             idx->count += 3;
             idx->idxs[i] += 1;
             idx->idxs[i+1] += 1;
-            idx->idxs[JOKER_INDEX] += 1;
+            idx->idxs[i+2] += 1;
             if(ok) {
                 return ok;
             }
         }
-        if(idx->idxs[i+1]==0&&idx->idxs[i+2]==0&&joker>=2) {
-            idx->idxs[i] -= 1;
-            idx->idxs[JOKER_INDEX] -= 2;
-            idx->count -= 3;
-            init_unititem(grab_cardsunit_item(u), UNIT_ITEM_SHUN_T, i,-(i+1),-(i+2));
-            bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i,u,f);
-            pop_cardsunit_item(u);
-            idx->count += 3;
-            idx->idxs[i] += 1;
-            idx->idxs[JOKER_INDEX] += 2;
-            if(ok) {
-                return ok;
+        if(value <= 7 && joker > 0)
+        {
+            if(idx->idxs[i+1]==0 && idx->idxs[i+2]!=0) {
+                idx->idxs[i] -= 1;
+                idx->idxs[JOKER_INDEX] -= 1;
+                idx->idxs[i+2] -= 1;
+                idx->count -= 3;
+                init_unititem(grab_cardsunit_item(u), UNIT_ITEM_SHUN_T, i,-(i+1),i+2);
+                bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i,u,f);
+                pop_cardsunit_item(u);
+                idx->count += 3;
+                idx->idxs[i] += 1;
+                idx->idxs[JOKER_INDEX] += 1;
+                idx->idxs[i+2] += 1;
+                if(ok) {
+                    return ok;
+                }
+            }
+            if(idx->idxs[i+1]!=0&&idx->idxs[i+2]==0) {
+                idx->idxs[i] -= 1;
+                idx->idxs[i+1] -= 1;
+                idx->idxs[JOKER_INDEX] -= 1;
+                idx->count -= 3;
+                init_unititem(grab_cardsunit_item(u), UNIT_ITEM_SHUN_T, i,i+1,-(i+2));
+                bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i,u,f);
+                pop_cardsunit_item(u);
+                idx->count += 3;
+                idx->idxs[i] += 1;
+                idx->idxs[i+1] += 1;
+                idx->idxs[JOKER_INDEX] += 1;
+                if(ok) {
+                    return ok;
+                }
+            }
+            if(idx->idxs[i+1]==0&&idx->idxs[i+2]==0&&joker>=2) {
+                idx->idxs[i] -= 1;
+                idx->idxs[JOKER_INDEX] -= 2;
+                idx->count -= 3;
+                init_unititem(grab_cardsunit_item(u), UNIT_ITEM_SHUN_T, i,-(i+1),-(i+2));
+                bool ok = _travel_4m1j_backtrace(idx,std::forward<bool>(jiang),i,u,f);
+                pop_cardsunit_item(u);
+                idx->count += 3;
+                idx->idxs[i] += 1;
+                idx->idxs[JOKER_INDEX] += 2;
+                if(ok) {
+                    return ok;
+                }
             }
         }
     }
@@ -611,24 +620,36 @@ void test_canhu_nojoker() {
     struct cardidxs idxs;
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T
-    idxs_add(&idxs, 1, 1);idxs_add(&idxs, 2, 1);idxs_add(&idxs, 3, 1);
-    idxs_add(&idxs, 4, 3);idxs_add(&idxs, 8, 2);
-    idxs_add(&idxs, 11, 1);idxs_add(&idxs, 12, 1);idxs_add(&idxs, 13, 1);
-    idxs_add(&idxs, 16, 1);idxs_add(&idxs, 17, 1);idxs_add(&idxs, 18, 1);
+    idxs_add(&idxs, W(1), 1);idxs_add(&idxs, W(2), 1);idxs_add(&idxs, W(3), 1);
+    idxs_add(&idxs, W(4), 3);idxs_add(&idxs, W(8), 2);
+    idxs_add(&idxs, T(1), 1);idxs_add(&idxs, T(2), 1);idxs_add(&idxs, T(3), 1);
+    idxs_add(&idxs, T(6), 1);idxs_add(&idxs, T(7), 1);idxs_add(&idxs, T(8), 1);
     assert(canhu_nojoker(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T7T,9T9T
-    idxs_add(&idxs, 1, 2);idxs_add(&idxs, 2, 2);idxs_add(&idxs, 3, 2);
-    idxs_add(&idxs, 4, 2);idxs_add(&idxs, 17, 4);idxs_add(&idxs, 19, 2);
+    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
+    idxs_add(&idxs, W(4), 2);idxs_add(&idxs, T(7), 4);idxs_add(&idxs, T(9), 2);
     assert(canhu_nojoker(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W2W,3W3W3W,7W7W,7W8W9W
     // 1W2W3W,1W2W3W,1W2W3W,7W7W,7W8W9W
-    idxs_add(&idxs, 1, 3);idxs_add(&idxs, 2, 3);idxs_add(&idxs, 3, 3);
-    idxs_add(&idxs, 7, 3);idxs_add(&idxs, 8, 1);idxs_add(&idxs, 9, 1);
+    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 3);idxs_add(&idxs, W(3), 3);
+    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
     assert(canhu_nojoker(&idxs));
+
+    std::memset(&idxs, 0, sizeof(idxs));
+    // 1W1W1W,2W2W2W,7W7W,7W8W9W,F1F1F1
+    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 3);idxs_add(&idxs, F(1), 3);
+    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
+    assert(canhu_nojoker(&idxs));
+
+    std::memset(&idxs, 0, sizeof(idxs));
+    // 1W1W1W,2W2W2W,7W7W,7W8W9W,F1F2F3
+    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 3);idxs_add(&idxs, F(1), 1);idxs_add(&idxs, F(2), 1);idxs_add(&idxs, F(3), 1);
+    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
+    assert(!canhu_nojoker(&idxs));
 }
 
 void test_travel_all_hu_nojoker() {
@@ -640,23 +661,23 @@ void test_travel_all_hu_nojoker() {
     struct cardidxs idxs;
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T
-    idxs_add(&idxs, 1, 1);idxs_add(&idxs, 2, 1);idxs_add(&idxs, 3, 1);
-    idxs_add(&idxs, 4, 3);idxs_add(&idxs, 8, 2);
-    idxs_add(&idxs, 11, 1);idxs_add(&idxs, 12, 1);idxs_add(&idxs, 13, 1);
-    idxs_add(&idxs, 16, 1);idxs_add(&idxs, 17, 1);idxs_add(&idxs, 18, 1);
+    idxs_add(&idxs, W(1), 1);idxs_add(&idxs, W(2), 1);idxs_add(&idxs, W(3), 1);
+    idxs_add(&idxs, W(4), 3);idxs_add(&idxs, W(8), 2);
+    idxs_add(&idxs, T(1), 1);idxs_add(&idxs, T(2), 1);idxs_add(&idxs, T(3), 1);
+    idxs_add(&idxs, T(6), 1);idxs_add(&idxs, T(7), 1);idxs_add(&idxs, T(8), 1);
     travel_all_hu_nojoker(&idxs, f);
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T7T,9T9T
-    idxs_add(&idxs, 1, 2);idxs_add(&idxs, 2, 2);idxs_add(&idxs, 3, 2);
-    idxs_add(&idxs, 4, 2);idxs_add(&idxs, 17, 4);idxs_add(&idxs, 19, 2);
+    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
+    idxs_add(&idxs, W(4), 2);idxs_add(&idxs, T(7), 4);idxs_add(&idxs, T(9), 2);
     travel_all_hu_nojoker(&idxs, f);
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W2W,3W3W3W,7W7W,7W8W9W
     // 1W2W3W,1W2W3W,1W2W3W,7W7W,7W8W9W
-    idxs_add(&idxs, 1, 3);idxs_add(&idxs, 2, 3);idxs_add(&idxs, 3, 3);
-    idxs_add(&idxs, 7, 3);idxs_add(&idxs, 8, 1);idxs_add(&idxs, 9, 1);
+    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 3);idxs_add(&idxs, W(3), 3);
+    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
     travel_all_hu_nojoker(&idxs, f);
 }
 
@@ -667,22 +688,22 @@ void test_rnd_travel_nojoker() {
         return false;
     };
     std::default_random_engine e(std::random_device{}());
-    int cards[TOAL_CARDS];
-    for(int i = 0; i < TOAL_CARDS; ++i) {
-        cards[i] = i;
+    char cards[TOAL_CARDS_NOJOKER];
+    for(int i = 0; i < HAND_CARDIDX_LAY_NOJOKER; ++i) {
+        memset(cards+i*4, i, 4);
     }
 
     int time = 0;
     while(true) {
         std::shuffle(std::begin(cards), std::end(cards), e);
 
-        cardids ids;
-        std::memset(&ids, 0, sizeof(ids));
-        for(int i = 0; i < HAND_CARDS_COUNT; ++i) {
-            ids_add(&ids, cards[i]);
-        }
         cardidxs idx;
-        ids2idxs(&ids, &idx);
+        idx.count = HAND_CARDS_COUNT;
+        memset(idx.idxs,0,sizeof(idx.idxs));
+        for(int i = 0; i < HAND_CARDS_COUNT; ++i) {
+            idx.idxs[cards[i]]++;
+        }
+
         auto now = std::chrono::system_clock::now();
         if(canhu_nojoker(&idx)) {
             print_cardidx(&idx, std::cout);
@@ -706,22 +727,22 @@ void test_canhu() {
     std::memset(&idxs, 0, sizeof(idxs));
     // 2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T,JOKER
     idxs_add(&idxs, JOKER_INDEX, 1);idxs_add(&idxs, 2, 1);idxs_add(&idxs, 3, 1);
-    idxs_add(&idxs, 4, 3);idxs_add(&idxs, 8, 2);
-    idxs_add(&idxs, 11, 1);idxs_add(&idxs, 12, 1);idxs_add(&idxs, 13, 1);
-    idxs_add(&idxs, 16, 1);idxs_add(&idxs, 17, 1);idxs_add(&idxs, 18, 1);
+    idxs_add(&idxs, W(4), 3);idxs_add(&idxs, W(8), 2);
+    idxs_add(&idxs, T(1), 1);idxs_add(&idxs, T(2), 1);idxs_add(&idxs, T(3), 1);
+    idxs_add(&idxs, T(6), 1);idxs_add(&idxs, T(7), 1);idxs_add(&idxs, T(8), 1);
     assert(canhu(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T,9T9T,JOKER
-    idxs_add(&idxs, 1, 2);idxs_add(&idxs, 2, 2);idxs_add(&idxs, 3, 2);
-    idxs_add(&idxs, 4, 2);idxs_add(&idxs, 17, 3);idxs_add(&idxs, 19, 2);
+    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
+    idxs_add(&idxs, T(4), 2);idxs_add(&idxs, T(7), 3);idxs_add(&idxs, T(9), 2);
     idxs_add(&idxs, JOKER_INDEX, 1);
     assert(canhu(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W,3W3W3W,7W7W,7W8W9W,JOKER
-    idxs_add(&idxs, 1, 3);idxs_add(&idxs, 2, 2);idxs_add(&idxs, 3, 3);
-    idxs_add(&idxs, 7, 3);idxs_add(&idxs, 8, 1);idxs_add(&idxs, 9, 1);
+    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 3);
+    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
     idxs_add(&idxs, JOKER_INDEX, 1);
     assert(canhu(&idxs));
 }
@@ -736,18 +757,18 @@ void test_travel_all_hu() {
     struct cardidxs idxs;
     std::memset(&idxs, 0, sizeof(idxs));
     // 2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T,JOKER
-    idxs_add(&idxs, JOKER_INDEX, 1);idxs_add(&idxs, 2, 1);idxs_add(&idxs, 3, 1);
-    idxs_add(&idxs, 4, 3);idxs_add(&idxs, 8, 2);
-    idxs_add(&idxs, 11, 1);idxs_add(&idxs, 12, 1);idxs_add(&idxs, 13, 1);
-    idxs_add(&idxs, 16, 1);idxs_add(&idxs, 17, 1);idxs_add(&idxs, 18, 1);
+    idxs_add(&idxs, JOKER_INDEX, 1);idxs_add(&idxs, W(2), 1);idxs_add(&idxs, W(3), 1);
+    idxs_add(&idxs, W(4), 3);idxs_add(&idxs, W(8), 2);
+    idxs_add(&idxs, T(1), 1);idxs_add(&idxs, T(2), 1);idxs_add(&idxs, T(3), 1);
+    idxs_add(&idxs, T(6), 1);idxs_add(&idxs, T(7), 1);idxs_add(&idxs, T(8), 1);
     std::cout << "begin calc idx:";
     print_cardidx(&idxs, std::cout);
     travel_all_hu(&idxs, f);
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T,9T9T,JOKER
-    idxs_add(&idxs, 1, 2);idxs_add(&idxs, 2, 2);idxs_add(&idxs, 3, 2);
-    idxs_add(&idxs, 4, 2);idxs_add(&idxs, 17, 3);idxs_add(&idxs, 19, 2);
+    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
+    idxs_add(&idxs, W(4), 2);idxs_add(&idxs, T(7), 3);idxs_add(&idxs, T(9), 2);
     idxs_add(&idxs, JOKER_INDEX, 1);
     std::cout << "begin calc idx:";
     print_cardidx(&idxs, std::cout);
@@ -755,8 +776,8 @@ void test_travel_all_hu() {
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W,3W3W3W,7W7W,7W8W9W,JOKER
-    idxs_add(&idxs, 1, 3);idxs_add(&idxs, 2, 2);idxs_add(&idxs, 3, 3);
-    idxs_add(&idxs, 7, 3);idxs_add(&idxs, 8, 1);idxs_add(&idxs, 9, 1);
+    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 3);
+    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
     idxs_add(&idxs, JOKER_INDEX, 1);
     std::cout << "begin calc idx:";
     print_cardidx(&idxs, std::cout);
@@ -773,19 +794,19 @@ void test_travel_1() {
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W4W5W6W5T5T5T1D9DJOKERJOKERJOKERJOKER
     idxs_add(&idxs, JOKER_INDEX, 4);
-    idxs_add(&idxs, 1, 2);idxs_add(&idxs, 4, 1);
-    idxs_add(&idxs, 5, 1);idxs_add(&idxs, 6, 1);
-    idxs_add(&idxs, 15, 3);idxs_add(&idxs, 21, 1);
-    idxs_add(&idxs, 29, 1);
+    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(4), 1);
+    idxs_add(&idxs, W(5), 1);idxs_add(&idxs, W(6), 1);
+    idxs_add(&idxs, T(5), 3);idxs_add(&idxs, D(1), 1);
+    idxs_add(&idxs, D(9), 1);
     //travel_all_hu(&idxs, f);
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 3W3W2T3T4T6D6D8D9D 5JK
     idxs_add(&idxs, JOKER_INDEX, 5);
-    idxs_add(&idxs, 3, 2); idxs_add(&idxs, 12, 1);
-    idxs_add(&idxs, 13, 1); idxs_add(&idxs, 14, 1);
-    idxs_add(&idxs, 26, 2); idxs_add(&idxs, 28, 1);
-    idxs_add(&idxs, 29, 1);
+    idxs_add(&idxs, W(3), 2); idxs_add(&idxs, T(2), 1);
+    idxs_add(&idxs, T(3), 1); idxs_add(&idxs, T(4), 1);
+    idxs_add(&idxs, D(6), 2); idxs_add(&idxs, D(8), 1);
+    idxs_add(&idxs, D(9), 1);
     travel_all_hu(&idxs, f);
 }
 
@@ -796,10 +817,12 @@ void test_rnd_travel() {
         return false;
     };
     std::default_random_engine e(std::random_device{}());
+    // 随机6个财神
     std::uniform_int_distribution<int> u(0, 6);
-    int cards[TOAL_CARDS];
-    for(int i = 0; i < TOAL_CARDS; ++i) {
-        cards[i] = i;
+
+    char cards[TOAL_CARDS_NOJOKER];
+    for(int i = 0; i < HAND_CARDIDX_LAY_NOJOKER; ++i) {
+        memset(cards+i*4, i, 4);
     }
 
     int time = 0;
@@ -808,17 +831,18 @@ void test_rnd_travel() {
         std::shuffle(std::begin(cards), std::end(cards), e);
 
         int joker_count = u(e);
-        cardids ids; 
-        ids_init(&ids);
-        for(int i = 0; i < HAND_CARDS_COUNT- joker_count; ++i) {
-            ids_add(&ids, cards[i]);
-        }
+
         cardidxs idx;
-        ids2idxs(&ids, &idx);
-        idxs_add(&idx, JOKER_INDEX, joker_count);
+        idx.count = HAND_CARDS_COUNT;
+        memset(idx.idxs,0,sizeof(idx.idxs));
+        for(int i = 0; i < HAND_CARDS_COUNT-joker_count; ++i) {
+            idx.idxs[cards[i]]++;
+        }
+        idx.idxs[JOKER_INDEX] = joker_count;
+
         auto now = std::chrono::system_clock::now();
         if(canhu(&idx)) {
-            //print_cardidx(&idx, std::cout);
+            print_cardidx(&idx, std::cout);
             travel_all_hu(&idx, f);
             auto after = std::chrono::system_clock::now();
             auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(after-now).count();
