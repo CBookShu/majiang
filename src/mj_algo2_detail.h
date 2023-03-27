@@ -5,27 +5,51 @@
 #define VALUE_BITS      3
 #define VALUE_MASK      0x07
 
-typedef std::int32_t    cards_key;
+typedef std::uint32_t    cards_key;
+typedef struct cardvalues {
+    char idxs[9];
+    char count;
+}cardvalues;
 
 
-static cards_key idx2_cardskey(cardidxs* c, int shape) {
+static void values_add(cardvalues* c, char idx, char add) {
+    (c)->idxs[idx]+=add;(c)->count+=add;
+}
+static cards_key values2_cardskey(cardvalues*c) {
     cards_key k = 0;
-    for(int i = 1; i <= 9; ++i) {
-        auto n = VALUE_MASK & c->idxs[shape * 10 + i];
+    for(int i = 0; i < 9; ++i) {
+        auto n = VALUE_MASK & c->idxs[i];
         n = n << ((i - 1) * VALUE_BITS);
         k |= n;
     }
     return k;
 }
+static void cardskey_2values(cards_key k,cardvalues*c) {
+    for(int i = 0; i < 9; ++i) {
+        auto n = (k >> ((i) * VALUE_BITS)) & VALUE_MASK;
+        c->idxs[i] = n;
+        c->count += n;
+    }
+}
+static cards_key idx2_cardskey(cardidxs* c, int shape) {
+    cards_key k = 0;
+    for(int i = 0; i < 9; ++i) {
+        auto n = VALUE_MASK & c->idxs[shape * 9 + i];
+        n = n << ((i) * VALUE_BITS);
+        k |= n;
+    }
+    return k;
+}
 static void cardskey_2idx(cards_key k, int shape, cardidxs* c) {
-    for(int i = 1; i <= 9; ++i) {
-        auto n = (k >> ((i - 1) * VALUE_BITS)) & VALUE_MASK;
-        c->idxs[shape*10 + i] = n;
+    for(int i = 0; i < 9; ++i) {
+        auto n = (k >> ((i) * VALUE_BITS)) & VALUE_MASK;
+        c->idxs[shape*9 + i] = n;
         c->count += n;
     }
 }
 
-struct MJCacheConfigDefault {
-    static const int MJ_HAND_CARDS_COUNT = 14;      //14 张牌
-    static const int MJ_LAYOUT_NUM = 34;            //
+namespace mj_algo2 {
+    void gen_cache();
+    
+
 };

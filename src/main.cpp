@@ -7,6 +7,6 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    test_algo1();
+    test_algo2();
     return 0;
 }
