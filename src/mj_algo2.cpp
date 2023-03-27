@@ -2,6 +2,7 @@
 #include "test.h"
 #include <sstream>
 
+using namespace mj_algo2;
 static void test_idxs_convert_cardskey() {
     cardidxs idxs;
     std::memset(&idxs, 0, sizeof(idxs));
@@ -24,7 +25,13 @@ static void test_idxs_convert_cardskey() {
     assert(ss[0].str() == ss[1].str());
 }
 
+static void test_gen_cache() {
+    gen_cache();
+}
+
 void test_algo2()
 {
     TEST_CALL(test_idxs_convert_cardskey);
+
+    TEST_CALL(test_gen_cache);
 }
