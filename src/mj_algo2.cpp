@@ -4,131 +4,270 @@
 #include <unordered_set>
 #include <functional>
 #include <memory>
+#include <set>
 
 using mj_key_cache_t = std::unordered_set<cards_key>;
-static mj_key_cache_t g_cache_keys_wtd[JOKER_MAX+1];
-static mj_key_cache_t g_cache_keys_fb[JOKER_MAX+1];
+static mj_key_cache_t g_cache_keys_4m1j_nf[JOKER_MAX+1];
+static mj_key_cache_t g_cache_keys_4m1j_f[JOKER_MAX+1];
+static mj_key_cache_t g_cache_keys_7j[JOKER_MAX+1];
 
-static void _gen_cache_with_joker(cardvalues* v, mj_key_cache_t cache[]) {
-    // print_cardvalues(v, std::cout);
-    int jokercount = v->idxs[9];
-    v->idxs[9] = 0;
+
+// static void _gen_cache_with_joker(cardvalues* v, mj_key_cache_t cache[]) {
+//     // print_cardvalues(v, std::cout);
+//     int jokercount = v->idxs[9];
+//     v->idxs[9] = 0;
+//     auto k = values2_cardskey(v);
+//     v->idxs[9] = jokercount;
+//     if(jokercount > JOKER_MAX) {
+//         return;
+//     }
+//     if(k == 0) {
+//         return ;
+//     }
+//     auto it = cache[jokercount].insert(k);
+//     if(!it.second) {
+//         // 重复的k
+//         return;
+//     }
+
+//     for(int i = 0; i < 9; ++i) {
+//         if(v->idxs[i] > 0) {
+//             values_add(v, i, -1);
+//             values_add(v, 9, 1);
+//             _gen_cache_with_joker(v, cache);
+//             values_add(v, 9, -1);
+//             values_add(v, i, 1);
+//         }
+//     }
+// }
+
+// static void _gen_cache_4m_1j(cardvalues* v, char level, bool fb) {
+//     if(level > 5) {
+//         return ;
+//     }
+//     _gen_cache_with_joker(v, fb ? g_cache_keys_4m1j_f : g_cache_keys_4m1j_nf);
+//     int count = fb ? 7 : 9;
+//     for (int i = 0; i < count; ++i) {
+//         if(!fb && v->idxs[i] >= 4) continue;
+//         if(fb && v->idxs[i] > 5) continue;
+
+//         // 刻字
+//         values_add(v, i, 3);
+//         level++;
+//         _gen_cache_4m_1j(v, jiang, level, fb);
+//         level--;
+//         values_add(v, i, -3);
+//         // 将
+//         if(!jiang) {
+//             jiang = true;
+//             level++;
+//             values_add(v, i, 2);
+//             _gen_cache_4m_1j(v, jiang, level, fb);
+//             level--;
+//             values_add(v, i, -2);
+//             jiang = false;
+//         }
+//         // 顺
+//         if(!fb && i <= 7 && v->idxs[i+1] < 4 && v->idxs[i+2]<4) {
+//             values_add(v, i, 1);
+//             values_add(v, i+1, 1);
+//             values_add(v, i+2, 1);
+//             level++;
+//             _gen_cache_4m_1j(v, jiang, level, fb);
+//             level--;
+//             values_add(v, i, -1);
+//             values_add(v, i+1, -1);
+//             values_add(v, i+2, -1);
+//         }
+//     }
+// }
+
+// static void _gen_cache_7j(cardvalues* v, char level, bool fb) {
+//     if(level > 7) {
+//         return ;
+//     }
+//     _gen_cache_with_joker(v, fb ? g_cache_keys_7j_f : g_cache_keys_7j_nf);
+//     int count = fb ? 7 : 9;
+//     for (int i = 0; i < count; ++i) {
+//         if(v->idxs[i] >= 4) {
+//             continue;
+//         }
+//         level++;
+//         values_add(v, i, 2);
+//         _gen_cache_7j(v, level, fb);
+//         level--;
+//         values_add(v, i, -2);
+//     }
+// }
+
+
+static std::set<cards_key> bad_route[3][JOKER_MAX + 1];
+
+static bool check_add(cardvalues_1* v, int joker, bool feng, bool j7) {
     auto k = values2_cardskey(v);
-    v->idxs[9] = jokercount;
-    if(jokercount > JOKER_MAX) {
-        return;
+    if (k == 0) return false;
+
+    mj_key_cache_t* cache;
+    if(j7) {
+        cache = &(g_cache_keys_7j[joker]);
+        auto& br = bad_route[0][joker];
+        if(br.count(k)) {
+            return false;
+        }
+        br.insert(k);
+    } else {
+        if(feng) {
+            cache = &(g_cache_keys_4m1j_f[joker]);
+            auto& br = bad_route[1][joker];
+            if(br.count(k)) {
+                return false;
+            }
+            br.insert(k);
+        } else {
+            cache = &(g_cache_keys_4m1j_nf[joker]);
+            auto& br = bad_route[2][joker];
+            if(br.count(k)) {
+                return false;
+            }
+            br.insert(k);
+        }
     }
-    if(k == 0) {
-        return ;
-    }
-    auto it = cache[jokercount].insert(k);
-    if(!it.second) {
-        // 重复的k
-        return;
+
+    auto it = cache->find(k);
+    if(it != cache->end()) {
+        return false;
     }
 
     for(int i = 0; i < 9; ++i) {
-        if(v->idxs[i] > 0) {
-            values_add(v, i, -1);
-            values_add(v, 9, 1);
-            _gen_cache_with_joker(v, cache);
-            values_add(v, 9, -1);
-            values_add(v, i, 1);
+        if(v->idxs[i] > 4) {
+            return true;
         }
     }
+    cache->insert(k);
+    return true;
 }
 
-static void _gen_cache_4m_1j(cardvalues* v, bool jiang, char level, bool fb) {
-    if(level > 5) {
-        return ;
-    }
-    _gen_cache_with_joker(v, fb ? g_cache_keys_fb : g_cache_keys_wtd);
-    int count = fb ? 7 : 9;
-    for (int i = 0; i < count; ++i) {
-        if(v->idxs[i] >= 4) {
+static void parse_table_sub(cardvalues_1* v, int joker, bool feng, bool j7) {
+    int count = feng ? 7 : 9;
+    for(int i = 0; i < count; ++i) {
+        if(v->idxs[i] == 0) continue;
+
+        values_add(v, i, -1);
+        if(!check_add(v, joker, feng, j7)) {
+            values_add(v, i, 1);
             continue;
         }
 
-        // 刻字
-        if (v->idxs[i] < 2) {
+        if(joker < JOKER_MAX) {
+            parse_table_sub(v, joker + 1, feng, j7);
+        }
+
+        values_add(v, i, 1);
+    }
+}
+
+static void parse_table(cardvalues_1* v, bool feng, bool j7) {
+    if(!check_add(v, 0, feng, j7)) {
+        return;
+    }
+    parse_table_sub(v, 1, feng, j7);
+}
+
+static void gen_auto_table_sub(cardvalues_1* v, int level, bool feng) {
+    int count = feng ? 7 : 16;
+    for(int i = 0; i < count; ++i) {
+        if(i <= 8) {
+            if(v->idxs[i] > 3) continue;
             values_add(v, i, 3);
-            level++;
-            _gen_cache_4m_1j(v, jiang, level, fb);
-            level--;
+        } else {
+            int index = i - 9;
+            if(v->idxs[index] > 5 || v->idxs[index + 1] > 5 || v->idxs[index + 2] > 5) continue;
+            values_add(v, index, 1);
+            values_add(v, index+1, 1);
+            values_add(v, index+2, 1);
+        }
+        parse_table(v, feng, false);
+        if(level < 4) {
+            gen_auto_table_sub(v, level+1, feng);
+        }
+        if(i <= 8) {
             values_add(v, i, -3);
-        }
-        // 将
-        if(!jiang&&v->idxs[i] < 3) {
-            jiang = true;
-            level++;
-            values_add(v, i, 2);
-            _gen_cache_4m_1j(v, jiang, level, fb);
-            level--;
-            values_add(v, i, -2);
-            jiang = false;
-        }
-        // 顺
-        if(!fb && i <= 7 && v->idxs[i+1] < 4 && v->idxs[i+2]<4) {
-            values_add(v, i, 1);
-            values_add(v, i+1, 1);
-            values_add(v, i+2, 1);
-            level++;
-            _gen_cache_4m_1j(v, jiang, level, fb);
-            level--;
-            values_add(v, i, -1);
-            values_add(v, i+1, -1);
-            values_add(v, i+2, -1);
+        } else {
+            int index = i - 9;
+            values_add(v, index, -1);
+            values_add(v, index+1, -1);
+            values_add(v, index+2, -1);
         }
     }
 }
 
-static void _gen_cache_7j(cardvalues* v, char level, bool fb) {
-    if(level > 7) {
-        return ;
-    }
-    _gen_cache_with_joker(v, fb ? g_cache_keys_fb : g_cache_keys_wtd);
-    int count = fb ? 7 : 9;
-    for (int i = 0; i < count; ++i) {
-        if(v->idxs[i] >= 4) {
-            continue;
+static void gen_4m1j_table() {
+    cardvalues_1 cards;
+    memset(&cards, 0, sizeof(cards));
+    gen_auto_table_sub(&cards, 1, false);
+    gen_auto_table_sub(&cards, 1, true);
+    
+    for(int i = 0; i < 9; ++i) {
+        values_add(&cards, i, 2);
+        gen_auto_table_sub(&cards, 1, false);
+        parse_table(&cards, false, false);
+        if(i < 7) {
+            parse_table(&cards, true, false);
+            gen_auto_table_sub(&cards, 1, true);
         }
-        level++;
+        values_add(&cards, i, -2);
+    }
+}
+
+static void gen_auto_7dui_table(cardvalues_1* v, int level) {
+    for(int i = 0; i < 9; ++i) {
+        if(v->idxs[i] >= 4) continue;
+
         values_add(v, i, 2);
-        _gen_cache_7j(v, level, fb);
-        level--;
+        parse_table(v, false, true);
+        if (level < 7) {
+            gen_auto_7dui_table(v, level + 1);
+        }
         values_add(v, i, -2);
     }
 }
 
+static void gen_7j_table() {
+    cardvalues_1 cards;
+    memset(&cards, 0, sizeof(cards));
+    gen_auto_7dui_table(&cards, 1);
+}
+
 void gen_cache()
 {
-    cardvalues values;
-    std::memset(&values,0,sizeof(values));
-    bool jiang = false;
-    char level = 0;
-    _gen_cache_4m_1j(&values, jiang, level, false);
-    _gen_cache_7j(&values, level, false);
-    _gen_cache_4m_1j(&values, jiang, level, true);
-    _gen_cache_7j(&values, level, true);
+    gen_4m1j_table();
+    gen_7j_table();
+    // cardvalues values;
+    // std::memset(&values,0,sizeof(values));
+    // bool jiang = false;
+    // char level = 0;
+    // _gen_cache_4m_1j(&values, jiang, level, false);
+    // _gen_cache_7j(&values, level, false);
+    // _gen_cache_4m_1j(&values, jiang, level, true);
+    // _gen_cache_7j(&values, level, true);
 
     std::size_t sz = 0;
     std::size_t sz1 = 0;
-    for(int i = 0; i < std::size(g_cache_keys_wtd); ++i) {
-        sz += g_cache_keys_wtd[i].size();
-        sz1 += g_cache_keys_fb[i].size();
+    std::size_t sz2 = 0;
+    for(int i = 0; i < std::size(g_cache_keys_4m1j_nf); ++i) {
+        sz += g_cache_keys_4m1j_nf[i].size();
+        sz1 += g_cache_keys_4m1j_f[i].size();
+        sz2 += g_cache_keys_7j[i].size();
     }
     std::cout << "total cache nofb: "<< sz << std::endl;
     std::cout << "total cache fb: "<< sz1 << std::endl;
+    std::cout << "total cache 7d: "<< sz2 << std::endl;
 }
 
-bool canhu_2(cardidxs *c)
-{
-    // 首先要保证c 中的牌张数量和格式一定要正确
-    // 分别对万，条，筒进行判断
+static bool _canhu_7j_2(cardidxs* c) {
     int joker = c->idxs[JOKER_INDEX];
-    int jiang = 0;
     for(int i = 0; i < SHAPE_FENG+1;++i) {
-        auto& cache = (i==SHAPE_FENG)?g_cache_keys_fb:g_cache_keys_wtd;
+        auto& cache =g_cache_keys_7j;
         int cards_count = 0;
         auto k = idx2_cardskey(c, i, &cards_count);
         if(k == 0) continue;
@@ -138,7 +277,36 @@ bool canhu_2(cardidxs *c)
             if(cache[j].count(k)) {
                 ok = true;
                 joker -= j;
-                if((cards_count+j) % 3 == 2) {
+                break;
+            } 
+        }
+        if(!ok) {
+            return false;
+        }
+        if(joker < 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool _canhu_4m1j_2(cardidxs* c) {
+    int joker = c->idxs[JOKER_INDEX];
+    int jiang = 0;
+    for(int i = 0; i < SHAPE_FENG+1;++i) {
+        auto& cache = (i==SHAPE_FENG)?g_cache_keys_4m1j_f:g_cache_keys_4m1j_nf;
+        int cards_count = 0;
+        auto k = idx2_cardskey(c, i, &cards_count);
+        if(k == 0) continue;
+
+        bool ok = false;
+        for(int j = 0; j <= joker; ++j) {
+            auto yu = (cards_count+j) % 3;
+            if (yu == 1) continue;
+            if(cache[j].count(k)) {
+                ok = true;
+                joker -= j;
+                if(yu == 2) {
                     jiang++;
                 }
                 break;
@@ -157,9 +325,16 @@ bool canhu_2(cardidxs *c)
     return true;
 }
 
+bool canhu_2(cardidxs *c)
+{
+    // 首先要保证c 中的牌张数量和格式一定要正确
+    // 分别对万，条，筒进行判断
+    return _canhu_7j_2(c) || _canhu_4m1j_2(c);
+}
+
 void travel_all_hu_2(cardidxs *c, bool (*f)(cardsunit *))
 {
-
+    
 }
 
 static void test_idxs_convert_cardskey() {
@@ -213,7 +388,7 @@ static void test_can_hu() {
     assert(canhu_2(&idxs));
 }
 
-static void test_rnd_canhu() {
+static void test_rnd_canhu_2() {
     #define MAX_COUNT (9 * 100 * 10000)
     std::unique_ptr<cardidxs[]> v = std::make_unique<cardidxs[]>(MAX_COUNT);
     std::memset(v.get(), 0, sizeof(v));
@@ -246,11 +421,12 @@ static void test_rnd_canhu() {
 
 void test_algo2()
 {
-    TEST_CALL(test_idxs_convert_cardskey);
+    // TEST_CALL(test_idxs_convert_cardskey);
+
+    // TEST_CALL(test_gen_cache);
+
+    // TEST_CALL(test_can_hu);
 
     TEST_CALL(test_gen_cache);
-
-    TEST_CALL(test_can_hu);
-
-    TEST_CALL(test_rnd_canhu);
+    // TEST_CALL(test_rnd_canhu_2);
 }

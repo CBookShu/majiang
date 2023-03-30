@@ -8,16 +8,21 @@
 #define VALUE_MASK_JOKER    0x20
 
 typedef std::uint32_t    cards_key;
-typedef struct cardvalues {
-    char idxs[10];
+template <int N>
+struct cardvalues_N {
+    char idxs[N];
     char count;
-}cardvalues;
+};
+using cardvalues = cardvalues_N<10>;
+using cardvalues_1 = cardvalues_N<32>;
 
-
-static void values_add(cardvalues* c, char idx, char add) {
+template <int N>
+static void values_add(cardvalues_N<N>* c, char idx, char add) {
     (c)->idxs[idx]+=add;(c)->count+=add;
 }
-static cards_key values2_cardskey(cardvalues*c) {
+
+template <int N>
+static cards_key values2_cardskey(cardvalues_N<N>*c) {
     cards_key k = 0;
     for(int i = 0; i < 9; ++i) {
         auto n = VALUE_MASK & c->idxs[i];
@@ -29,7 +34,19 @@ static cards_key values2_cardskey(cardvalues*c) {
     k |= n;
     return k;
 }
-static char cardskey_2values(cards_key k,cardvalues*c) {
+
+static cards_key v2k(int cardis[]) {
+    cards_key k = 0;
+    for(int i = 0; i < 9; ++i) {
+        auto n = VALUE_MASK & cardis[i];
+        n = n << ((i) * VALUE_BITS);
+        k |= n;
+    }
+    return k;
+}
+
+template <int N>
+static char cardskey_2values(cards_key k,cardvalues_N<N>*c) {
     char res = 0;
     for(int i = 0; i < 9; ++i) {
         auto n = (k >> ((i) * VALUE_BITS)) & VALUE_MASK;
@@ -78,7 +95,8 @@ static void cardskey_2idx(cards_key k, int shape, cardidxs* c) {
     c->count += n;
 }
 
-static void print_cardvalues(cardvalues* v, std::ostream& os) {
+template <int N>
+static void print_cardvalues(cardvalues_N<N>* v, std::ostream& os) {
     for(int i = 0; i < std::size(v->idxs); ++i) {
         os << (int)v->idxs[i];
         os << ",";

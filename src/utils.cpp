@@ -8,7 +8,7 @@ int get_card_shape_byidx(char idx) {
 int get_card_value_byidx(char idx) {
     if(idx == JOKER_INDEX) return 10;// 财神不应该有牌面值
     if(idx >= HAND_CARDIDX_LAY_FENGSTART) return idx-HAND_CARDIDX_LAY_FENGSTART+1;
-    return idx/9 + 1;
+    return idx%9 + 1;
 }
 
 const char *get_shape_name(char shape) {

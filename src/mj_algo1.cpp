@@ -3,6 +3,7 @@
 #include <cstring>
 #include <array>
 #include <algorithm>
+#include <memory>
 
 static bool _canhu_4m1j_backtrace_nj(cardidxs* idx, int b, bool&& jiang) {
     if(idx->count == 0) {
@@ -859,6 +860,36 @@ void test_rnd_travel() {
     std::cout << "big cost times:" << big_cost_time << std::endl;
 }
 
+static void test_rnd_canhu_1() {
+    #define MAX_COUNT (9 * 100 * 10000)
+    std::unique_ptr<cardidxs[]> v = std::make_unique<cardidxs[]>(MAX_COUNT);
+    std::memset(v.get(), 0, sizeof(v));
+    srand(1);
+    char cards[TOAL_CARDS_NOJOKER];
+    for(int i = 0; i < HAND_CARDIDX_LAY_NOJOKER; ++i) {
+        memset(cards+i*4, i, 4);
+    }
+    int joker_count = JOKER_MAX;
+    for(int i = 0; i < MAX_COUNT; ++i) {
+        std::random_shuffle(std::begin(cards), std::end(cards));
+        v[i].count = HAND_CARDS_COUNT;
+        for(int j = 0; j < HAND_CARDS_COUNT - joker_count;++j) {
+            v[i].idxs[cards[j]]++;
+        }
+        v[i].idxs[JOKER_INDEX] = joker_count;
+    }
+
+    std::cout << "start" << std::endl;
+    int hu = 0;
+    auto now = std::chrono::system_clock::now();
+    for(int i = 0; i < MAX_COUNT; ++i) {
+        hu += canhu(&v[i]);
+    }
+    auto after = std::chrono::system_clock::now();
+    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(after-now).count();
+    std::cout << "回溯法:" << MAX_COUNT / 10000 << "万次，time:" << diff << "ms" << std::endl;
+	std::cout << "Hu: " << hu << std::endl;
+}
 
 void test_algo1()
 {
@@ -871,4 +902,5 @@ void test_algo1()
     TEST_CALL(test_travel_all_hu);
     TEST_CALL(test_travel_1);
     TEST_CALL(test_rnd_travel);
+    // TEST_CALL(test_rnd_canhu_1);
 }
