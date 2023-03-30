@@ -45,6 +45,6 @@
 ### 算法
 [回溯算法](BacktraceAlgo.md)
 
-[缓存查表 TODO](CacheAlgo.md)
+[缓存查表](CacheAlgo.md)
 
 [优化回溯算法，超越查表 TODO]()
