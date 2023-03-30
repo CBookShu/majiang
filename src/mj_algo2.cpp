@@ -242,14 +242,6 @@ void gen_cache()
 {
     gen_4m1j_table();
     gen_7j_table();
-    // cardvalues values;
-    // std::memset(&values,0,sizeof(values));
-    // bool jiang = false;
-    // char level = 0;
-    // _gen_cache_4m_1j(&values, jiang, level, false);
-    // _gen_cache_7j(&values, level, false);
-    // _gen_cache_4m_1j(&values, jiang, level, true);
-    // _gen_cache_7j(&values, level, true);
 
     std::size_t sz = 0;
     std::size_t sz1 = 0;
