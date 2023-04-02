@@ -80,6 +80,9 @@ static void parse_table(cardvalues_1* v, bool feng, bool j7) {
     if(!check_add(v, 0, feng, j7)) {
         return;
     }
+    if(JOKER_MAX == 0) {
+        return;
+    }
     parse_table_sub(v, 1, feng, j7);
 }
 
@@ -232,11 +235,6 @@ bool canhu_2(cardidxs *c)
     // 首先要保证c 中的牌张数量和格式一定要正确
     // 分别对万，条，筒进行判断
     return _canhu_7j_2(c) || _canhu_4m1j_2(c);
-}
-
-void travel_all_hu_2(cardidxs *c, bool (*f)(cardsunit *))
-{
-    
 }
 
 static void test_idxs_convert_cardskey() {

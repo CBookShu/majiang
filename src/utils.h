@@ -39,7 +39,7 @@
 #define HAND_CARDIDX_LAY_FENGSTART  27
 #define UNIT_CARDS_MAX_COUNT        4
 #define UNIT_MAX_COUNT              7
-#define JOKER_MAX                   4
+#define JOKER_MAX                   6
 
 #define W(n)    (n-1)
 #define T(n)    (9+n-1)

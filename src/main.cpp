@@ -27,6 +27,12 @@ static bool check_algo1_with_algo2(cardidxs* ve) {
         v[i].idxs[JOKER_INDEX] = joker_count;
     }
 
+    bool (*f)(cardsunit*) = nullptr;
+    f = [](cardsunit* u){
+        print_cardsunit(u, std::cout);
+        return false;
+    };
+
     std::cout << "start" << std::endl;
     int hu = 0;
     auto now = std::chrono::system_clock::now();
@@ -36,7 +42,7 @@ static bool check_algo1_with_algo2(cardidxs* ve) {
         //     *ve = v[i];
         //     return true;
         // }
-        canhu_2(&v[i]);
+        travel_all_hu(&v[i], f);
     }
     std::cout << "end" << std::endl;
     auto after = std::chrono::system_clock::now();
@@ -57,14 +63,14 @@ static void test_1(cardidxs v) {
 int main(int argc, char** argv)
 {
     // test_algo1();
-    test_algo2();
+    // test_algo2();
 
-    // gen_cache();
+    gen_cache();
     
-    cardidxs v;
-    if(check_algo1_with_algo2(&v)) {
-        test_1(v);
-    }
+    // cardidxs v;
+    // if(check_algo1_with_algo2(&v)) {
+    //     test_1(v);
+    // }
 
     return 0;
 }
