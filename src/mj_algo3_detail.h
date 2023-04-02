@@ -1,4 +1,5 @@
 #pragma once
+#include "utils.h"
 #include <cassert>
 
 typedef struct hu_units_des {
@@ -51,53 +52,34 @@ typedef struct hu_units {
     int count;
 }hu_units;
 
-static int hui_card_count(UnitType type) {
-    switch (type)
-    {
-    case M_BIAN:
-    case M_KEZI:
-    case M_2JK:
-    case M_3JK:
-    case M_ZHONG:
-        return 3;
-    case D_KAN_BIAN:
-    case D_KAN_ZHONG:
-    case D_LIAN_BIAN:
-    case D_LIAN_ZHONG:
-    case J_19:
-    case J_28:
-    case J_2JK:
-    case J_FB:
-    case J_ZHONG:
-        return 2;
-    case P_19:
-    case P_28:
-    case P_FB:
-    case P_ZHONG:
-        return 1;
-    default:
-        break;
-    }
-    assert(false);
-}
+int hui_card_count(UnitType type);
 
-static void hui_init(hu_unit_item* p, int card[], UnitType type, UnitSubType subtype) {
-    for(int i = 0; i < hui_card_count(type); ++i) {
-        p->idx[i] = card[i];
-    }
-    p->type = type;
-    p->subtype = subtype;
-}
+void hui_init(hu_unit_item* p, int card[], UnitType type, UnitSubType subtype);
 
-static void hus_init(hu_units* p) {
-    p->count = 0;
-}
+hu_unit_item hui_P(int cardidx);
 
-static hu_unit_item* hus_grab_item(hu_units* p) {
-    assert(p->count >=0 && p->count < std::size(p->us));
-    return &p->us[p->count++];
-}
+hu_unit_item hui_M_3JK();
 
-static void hs_pop_item(hu_units* p) {
-    p->count--;
-}
+hu_unit_item hui_J_2JK();
+
+hu_unit_item hui_M_2JK(int cardidx);
+
+// D+1JK=M
+int hui_D2M(hu_unit_item* d, hu_unit_item ms[2]);
+
+// J+1JK=M
+hu_unit_item hui_J2M(hu_unit_item* j);
+
+// P+1JK=J
+hu_unit_item hui_P2J(hu_unit_item* p);
+
+// P+2JK=M
+hu_unit_item hui_P2M(hu_unit_item* p);
+
+void hus_init(hu_units* p);
+
+hu_unit_item* hus_grab_item(hu_units* p);
+
+void hs_pop_item(hu_units* p);
+
+int get_hu_mdjp_des(int joker, hu_units_des*& des);

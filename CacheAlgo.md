@@ -1,5 +1,8 @@
 ### 缓存算法
 
+代码在:
+mj_algo2.h
+
 缓存表创建的代码，参考自：
 https://github.com/CBookShu/q_algorithm 
 
