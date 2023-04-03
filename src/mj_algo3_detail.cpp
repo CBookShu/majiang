@@ -1,6 +1,7 @@
 #include "mj_algo3_detail.h"
+#include "mj_utils.h"
 
-int hui_card_count(UnitType type)
+int hui_count(UnitSubType type)
  {
     switch (type)
     {
@@ -31,11 +32,13 @@ int hui_card_count(UnitType type)
     assert(false);
 }
 
-void hui_init(hu_unit_item *p, int card[], UnitType type, UnitSubType subtype)
+void hui_init(hu_unit_item *p, std::initializer_list<int>&& cards, UnitType type, UnitSubType subtype)
 {
-    for(int i = 0; i < hui_card_count(type); ++i) {
-        p->idx[i] = card[i];
+    int i = 0;    
+    for(auto v : cards) {
+        p->idx[i++] = v;
     }
+    assert(i == hui_count(subtype));
     p->type = type;
     p->subtype = subtype;
 }
@@ -53,7 +56,7 @@ hu_unit_item hui_P(int cardidx)
         } else if(v == 2 || v == 8) {
             p.subtype = P_28;
         } else {
-            p.subtype == P_ZHONG;
+            p.subtype = P_ZHONG;
         }
     }
     p.idx[0] = cardidx;
@@ -202,38 +205,152 @@ hu_unit_item hui_P2M(hu_unit_item *p)
     return m;
 }
 
-void hus_init(hu_units *p)
-{
-    p->count = 0;
+#define MAKE_MDJP_TABLE(m,d,j,p,jk) ChecAndGet<m,d,j,p,jk>()
+template<int M,int D,int J,int P, int JK>
+static hu_units_des ChecAndGet() {
+    static_assert((M*3 + 2*D + 2*J + P + JK) == HAND_CARDS_COUNT);
+    return hu_units_des{M,D,J,P};
 }
 
-hu_unit_item *hus_grab_item(hu_units *p)
-{
-    assert(p->count >=0 && p->count < std::size(p->us));
-    return &p->us[p->count++];
-}
 
-void hs_pop_item(hu_units *p)
+int get_hu_mdjp_des_4m1j(int joker, hu_units_des*& des)
 {
-    p->count--;
-}
-
-int get_hu_mdjp_des(int joker, hu_units_des*& des)
-{
-#define MAKE_MDJP_TABLE(m,d,j,p) {m,d,j,p}
     if(joker == 0) {
         static hu_units_des g_des[] = {
-            MAKE_MDJP_TABLE(4,0,1,0),MAKE_MDJP_TABLE(0,0,7,0)
+            MAKE_MDJP_TABLE(4,0,1,0,0)
         };
         des = &g_des[0];
         return std::size(g_des);
     } else if (joker == 1) {
         static hu_units_des g_des[] = {
-            MAKE_MDJP_TABLE(4,0,0,1),MAKE_MDJP_TABLE(0,0,7,0)
+            MAKE_MDJP_TABLE(4,0,0,1,1),MAKE_MDJP_TABLE(3,1,1,0,1),MAKE_MDJP_TABLE(3,0,2,0,1)
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    } else if(joker == 2) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(4,0,0,0,2),MAKE_MDJP_TABLE(3,0,1,1,2),
+            MAKE_MDJP_TABLE(3,1,0,1,2),MAKE_MDJP_TABLE(2,2,1,0,2),
+            MAKE_MDJP_TABLE(2,1,2,0,2),MAKE_MDJP_TABLE(2,0,3,0,2),
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    }else if(joker == 3) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(3,0,1,0,3),MAKE_MDJP_TABLE(3,1,0,0,3),
+            MAKE_MDJP_TABLE(3,0,0,2,3),MAKE_MDJP_TABLE(2,2,0,1,3),
+            MAKE_MDJP_TABLE(2,1,1,1,3),MAKE_MDJP_TABLE(2,0,2,1,3),
+            MAKE_MDJP_TABLE(1,0,4,0,3),MAKE_MDJP_TABLE(1,1,3,0,3),
+            MAKE_MDJP_TABLE(1,2,2,0,3),MAKE_MDJP_TABLE(1,3,1,0,3),
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    }else if(joker == 4) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(3,0,0,1,4),MAKE_MDJP_TABLE(2,2,0,0,4),
+            MAKE_MDJP_TABLE(2,1,1,0,4),MAKE_MDJP_TABLE(2,1,0,2,4),
+            MAKE_MDJP_TABLE(2,0,2,0,4),MAKE_MDJP_TABLE(2,0,1,2,4),
+            MAKE_MDJP_TABLE(1,3,0,1,4),MAKE_MDJP_TABLE(1,2,1,1,4),
+            MAKE_MDJP_TABLE(1,1,2,1,4),MAKE_MDJP_TABLE(1,0,3,1,4),
+            MAKE_MDJP_TABLE(0,4,1,0,4),MAKE_MDJP_TABLE(0,3,2,0,4),
+            MAKE_MDJP_TABLE(0,2,3,0,4),MAKE_MDJP_TABLE(0,1,4,0,4),
+            MAKE_MDJP_TABLE(0,0,5,0,4),
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    }else if(joker == 5) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(3,0,0,0,5),MAKE_MDJP_TABLE(2,1,0,1,5),
+            MAKE_MDJP_TABLE(2,0,1,1,5),MAKE_MDJP_TABLE(2,0,0,3,5),
+            MAKE_MDJP_TABLE(1,3,0,0,5),MAKE_MDJP_TABLE(1,2,1,0,5),
+            MAKE_MDJP_TABLE(1,2,0,2,5),MAKE_MDJP_TABLE(1,1,2,0,5),
+            MAKE_MDJP_TABLE(1,1,1,2,5),MAKE_MDJP_TABLE(1,0,3,0,5),
+            MAKE_MDJP_TABLE(1,0,2,2,5),MAKE_MDJP_TABLE(0,0,4,1,5),
+            MAKE_MDJP_TABLE(0,4,0,1,5),MAKE_MDJP_TABLE(0,3,1,1,5),
+            MAKE_MDJP_TABLE(0,2,2,1,5),MAKE_MDJP_TABLE(0,1,3,1,5),
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    }else if(joker == 6) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(2,1,0,0,6),MAKE_MDJP_TABLE(2,0,1,0,6),
+            MAKE_MDJP_TABLE(2, 0, 0, 2, 6),MAKE_MDJP_TABLE(1, 2, 0, 1, 6),
+            MAKE_MDJP_TABLE(1, 1, 1, 1, 6),MAKE_MDJP_TABLE(1, 1, 0, 3, 6),
+            MAKE_MDJP_TABLE(1, 0, 2, 1, 6),MAKE_MDJP_TABLE(1, 0, 1, 3, 6),
+            MAKE_MDJP_TABLE(0, 4, 0, 0, 6),MAKE_MDJP_TABLE(0, 3, 1, 0, 6),
+            MAKE_MDJP_TABLE(0, 3, 0, 2, 6),MAKE_MDJP_TABLE(0, 2, 2, 0, 6),
+            MAKE_MDJP_TABLE(0, 2, 1, 2, 6),MAKE_MDJP_TABLE(0, 1, 3, 0, 6),
+            MAKE_MDJP_TABLE(0, 1, 2, 2, 6),MAKE_MDJP_TABLE(0, 0, 4, 0, 6),
+            MAKE_MDJP_TABLE(0, 0, 3, 2, 6),
         };
         des = &g_des[0];
         return std::size(g_des);
     }
+
+    assert(false);
+    return -1;
+}
+
+int get_hu_mdjp_des_7j(int joker, hu_units_des *&des)
+{
+    if(joker == 0) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(0,0,7,0,0)
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    } else if (joker == 1) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(0,0,6,1,1),
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    } else if(joker == 2) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(0,0,6,0,2),MAKE_MDJP_TABLE(0,0,5,2,2),
+            MAKE_MDJP_TABLE(0,1,5,0,2),
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    }else if(joker == 3) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(0,0,5,1,3),MAKE_MDJP_TABLE(0,1,4,1,3),
+            MAKE_MDJP_TABLE(0,0,4,3,3),MAKE_MDJP_TABLE(1,0,4,0,3),
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    }else if(joker == 4) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(1,0,3,1,4),MAKE_MDJP_TABLE(0,2,3,0,4),
+            MAKE_MDJP_TABLE(0,1,4,0,4),MAKE_MDJP_TABLE(0,0,5,0,4),
+            MAKE_MDJP_TABLE(0,0,4,2,4),MAKE_MDJP_TABLE(0,0,3,4,4),
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    }else if(joker == 5) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(1,1,2,0,5),MAKE_MDJP_TABLE(1,0,3,0,5),
+            MAKE_MDJP_TABLE(1,0,2,2,5),MAKE_MDJP_TABLE(0,2,2,1,5),
+            MAKE_MDJP_TABLE(0,1,3,1,5),MAKE_MDJP_TABLE(0,1,2,3,5),
+            MAKE_MDJP_TABLE(0,0,4,1,5),MAKE_MDJP_TABLE(0,0,3,3,5),
+            MAKE_MDJP_TABLE(0,0,2,5,5)
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    }else if(joker == 6) {
+        static hu_units_des g_des[] = {
+            MAKE_MDJP_TABLE(2, 0, 1, 0, 6),MAKE_MDJP_TABLE(1, 1, 1, 1, 6),
+            MAKE_MDJP_TABLE(1, 0, 2, 1, 6),MAKE_MDJP_TABLE(1, 0, 1, 3, 6),
+            MAKE_MDJP_TABLE(0, 3, 1, 0, 6),MAKE_MDJP_TABLE(0, 2, 2, 0, 6),
+            MAKE_MDJP_TABLE(0, 2, 1, 2, 6),MAKE_MDJP_TABLE(0, 1, 2, 2, 6),
+            MAKE_MDJP_TABLE(0, 1, 3, 0, 6),MAKE_MDJP_TABLE(0, 1, 1, 4, 6),
+            MAKE_MDJP_TABLE(0, 0, 4, 0, 6),MAKE_MDJP_TABLE(0, 0, 3, 2, 6),
+            MAKE_MDJP_TABLE(0, 0, 2, 4, 6),MAKE_MDJP_TABLE(0, 0, 1, 6, 6),
+        };
+        des = &g_des[0];
+        return std::size(g_des);
+    }
+
     assert(false);
     return -1;
 }

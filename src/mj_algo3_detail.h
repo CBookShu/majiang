@@ -1,6 +1,7 @@
 #pragma once
-#include "utils.h"
+#include "mj_utils.h"
 #include <cassert>
+#include <initializer_list>
 
 typedef struct hu_units_des {
     int M;
@@ -47,14 +48,21 @@ typedef struct hu_unit_item {
     UnitSubType subtype;
 }hu_unit_item;
 
-typedef struct hu_units {
-    hu_unit_item us[7]; // 4m+1j || 7j
-    int count;
-}hu_units;
+typedef struct hu_card_units {
+    c_static_array<hu_unit_item, 4> M;
+    c_static_array<hu_unit_item, 7> J;
+}hu_card_units;
 
-int hui_card_count(UnitType type);
+typedef struct hand_card_units {
+    c_static_array<hu_unit_item, 4> M;
+    c_static_array<hu_unit_item, JOKER_MAX> D;
+    c_static_array<hu_unit_item, 7> J;
+    c_static_array<hu_unit_item, JOKER_MAX> P;
+}hand_card_units;
 
-void hui_init(hu_unit_item* p, int card[], UnitType type, UnitSubType subtype);
+
+int hui_count(UnitSubType type);
+void hui_init(hu_unit_item* p, std::initializer_list<int>&& cards, UnitType type, UnitSubType subtype);
 
 hu_unit_item hui_P(int cardidx);
 
@@ -63,6 +71,21 @@ hu_unit_item hui_M_3JK();
 hu_unit_item hui_J_2JK();
 
 hu_unit_item hui_M_2JK(int cardidx);
+
+static void print_hui(hu_unit_item* p, std::ostream& os) {
+    for (int i = 0; i < hui_count(p->subtype); ++i) {
+        os << get_card_name(p->idx[i]);
+    }
+}
+
+template <int N>
+static void print_hui_array(c_static_array<hu_unit_item, N>* arrp, std::ostream& os) {
+    for(auto& it:*arrp) {
+        print_hui(&it, os);
+        os << ",";
+    }
+    os << std::endl;
+}
 
 // D+1JK=M
 int hui_D2M(hu_unit_item* d, hu_unit_item ms[2]);
@@ -76,10 +99,5 @@ hu_unit_item hui_P2J(hu_unit_item* p);
 // P+2JK=M
 hu_unit_item hui_P2M(hu_unit_item* p);
 
-void hus_init(hu_units* p);
-
-hu_unit_item* hus_grab_item(hu_units* p);
-
-void hs_pop_item(hu_units* p);
-
-int get_hu_mdjp_des(int joker, hu_units_des*& des);
+int get_hu_mdjp_des_4m1j(int joker, hu_units_des*& des);
+int get_hu_mdjp_des_7j(int joker, hu_units_des*& des);

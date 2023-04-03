@@ -1,5 +1,5 @@
 #pragma once
-#include "utils.h"
+#include "mj_utils.h"
 
 /*
     麻将回溯计算：

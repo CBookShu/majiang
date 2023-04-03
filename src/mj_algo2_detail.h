@@ -1,5 +1,5 @@
 #pragma once
-#include "utils.h"
+#include "mj_utils.h"
 #include <cstdint>
 
 #define VALUE_BITS          3

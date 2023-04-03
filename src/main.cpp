@@ -2,16 +2,18 @@
 #include <random>
 #include <memory>
 #include <algorithm>
+#include <map>
 #include "test.h"
 #include "mj_algo1.h"
 #include "mj_algo2.h"
+#include "mj_algo3.h"
 
 using namespace std;
 
 static bool check_algo1_with_algo2(cardidxs* ve) {
     #define MAX_COUNT (100 * 10000)
     std::unique_ptr<cardidxs[]> v = std::make_unique<cardidxs[]>(MAX_COUNT);
-    std::memset(v.get(), 0, sizeof(v));
+    zero_struct(v.get());
     srand(1);
     char cards[TOAL_CARDS_NOJOKER];
     for(int i = 0; i < HAND_CARDIDX_LAY_NOJOKER; ++i) {
@@ -37,12 +39,12 @@ static bool check_algo1_with_algo2(cardidxs* ve) {
     int hu = 0;
     auto now = std::chrono::system_clock::now();
     for(int i = 0; i < MAX_COUNT; ++i) {
-        // if(canhu(&v[i]) != canhu_2(&v[i])) {
-        //     print_cardidx(&v[i], std::cout);
-        //     *ve = v[i];
-        //     return true;
-        // }
-        travel_all_hu(&v[i], f);
+        if(canhu(&v[i]) != canhu_2(&v[i])) {
+            print_cardidx(&v[i], std::cout);
+            *ve = v[i];
+            return true;
+        }
+        // travel_all_hu(&v[i], f);
     }
     std::cout << "end" << std::endl;
     auto after = std::chrono::system_clock::now();
@@ -60,17 +62,17 @@ static void test_1(cardidxs v) {
     std::cout << b1 << b2 << std::endl;
 }
 
+static void check_algo1_algo2() {
+    gen_cache();
+    cardidxs v;
+    zero_struct(v);
+    if(check_algo1_with_algo2(&v)) {
+        test_1(v);
+    }
+}
+
 int main(int argc, char** argv)
 {
-    // test_algo1();
-    // test_algo2();
-
-    gen_cache();
-    
-    // cardidxs v;
-    // if(check_algo1_with_algo2(&v)) {
-    //     test_1(v);
-    // }
-
+    mj_algo3_test();
     return 0;
 }
