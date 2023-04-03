@@ -3,12 +3,12 @@
 #include <cassert>
 #include <initializer_list>
 
-typedef struct hu_units_des {
-    int M;
-    int D;
-    int J;
-    int P;
-}hu_units_des;
+// typedef struct hu_units_des {
+//     char M;
+//     char D;
+//     char J;
+//     char P;
+// }hu_units_des;
 
 enum UnitType {
     UIT_NONE = 0,
@@ -58,6 +58,7 @@ typedef struct hand_card_units {
     c_static_array<hu_unit_item, JOKER_MAX> D;
     c_static_array<hu_unit_item, 7> J;
     c_static_array<hu_unit_item, JOKER_MAX> P;
+    int joker;
 }hand_card_units;
 
 
@@ -99,5 +100,6 @@ hu_unit_item hui_P2J(hu_unit_item* p);
 // P+2JK=M
 hu_unit_item hui_P2M(hu_unit_item* p);
 
-int get_hu_mdjp_des_4m1j(int joker, hu_units_des*& des);
-int get_hu_mdjp_des_7j(int joker, hu_units_des*& des);
+int calc_mdjp(hand_card_units* p);
+int get_hu_mdjp_des_4m1j(int joker, int*& des);
+int get_hu_mdjp_des_7j(int joker, int*& des);

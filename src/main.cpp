@@ -1,3 +1,4 @@
+#include <initializer_list>
 #include <iostream>
 #include <random>
 #include <memory>
@@ -10,7 +11,7 @@
 
 using namespace std;
 
-static bool check_algo1_with_algo2(cardidxs* ve) {
+static bool check_algo_with_algo1(cardidxs* ve, bool (canhu_f)(cardidxs *c)) {
     #define MAX_COUNT (100 * 10000)
     std::unique_ptr<cardidxs[]> v = std::make_unique<cardidxs[]>(MAX_COUNT);
     zero_struct(v.get());
@@ -39,7 +40,7 @@ static bool check_algo1_with_algo2(cardidxs* ve) {
     int hu = 0;
     auto now = std::chrono::system_clock::now();
     for(int i = 0; i < MAX_COUNT; ++i) {
-        if(canhu(&v[i]) != canhu_2(&v[i])) {
+        if(canhu(&v[i]) != canhu_f(&v[i])) {
             print_cardidx(&v[i], std::cout);
             *ve = v[i];
             return true;
@@ -66,13 +67,32 @@ static void check_algo1_algo2() {
     gen_cache();
     cardidxs v;
     zero_struct(v);
-    if(check_algo1_with_algo2(&v)) {
+    if(check_algo_with_algo1(&v, canhu_2)) {
         test_1(v);
+    }
+}
+
+static void test_2(cardidxs v) {
+    print_cardidx(&v, std::cout);
+    auto b1 = canhu(&v);
+    auto b2 = canhu_3(&v);
+
+    std::cout << b1 << b2 << std::endl;
+}
+
+// TODO: 验证canhu_3 的正确性
+static void check_algo1_algo3() {
+    gen_cache();
+    cardidxs v;
+    zero_struct(v);
+    if(check_algo_with_algo1(&v, canhu_3)) {
+        test_2(v);
     }
 }
 
 int main(int argc, char** argv)
 {
-    mj_algo3_test();
+    // mj_algo3_test();
+    check_algo1_algo3();
     return 0;
 }
