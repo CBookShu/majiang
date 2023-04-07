@@ -160,13 +160,11 @@ static bool _pack_func(cardidxs*c, hand_card_units* p, int jokerleft) {
                 subtype = J_28;
             }
         }
-        jokerleft--;
         idxs_add(c, pos, -1);
         idxs_add(c, pos, -1);
         auto* item = p->J.grap();
         hui_init(item, {pos, pos}, UIT_J, subtype);
         auto r = _pack_func(c, p, jokerleft);
-        jokerleft++;
         idxs_add(c, pos, 1);
         idxs_add(c, pos, 1);
         p->J.pop();

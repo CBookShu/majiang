@@ -8,6 +8,7 @@
 #include "mj_algo1.h"
 #include "mj_algo2.h"
 #include "mj_algo3.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -94,5 +95,11 @@ int main(int argc, char** argv)
 {
     // mj_algo3_test();
     check_algo1_algo3();
+
+    // cardidxs v;
+    // zero_struct(v);
+    // idxs_add_args(&v, T(2),T(6),D(6),F(2),F(3),F(3),F(5),F(6),JOKER_INDEX,JOKER_INDEX,JOKER_INDEX,JOKER_INDEX,JOKER_INDEX,JOKER_INDEX);
+    // canhu_3(&v);
+
     return 0;
 }

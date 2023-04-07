@@ -43,12 +43,6 @@
 #define UNIT_MAX_COUNT              7
 #define JOKER_MAX                   6
 
-#define W(n)    (n-1)
-#define T(n)    (9+n-1)
-#define D(n)    (18+n-1)
-#define F(n)    (27+n-1)
-
-
 #define SHAPE_WAN                   0
 #define SHAPE_TIAO                  1
 #define SHAPE_DONG                  2
@@ -56,6 +50,11 @@
 #define SHAPE_JOKER                 4
 #define ONE_COLOR_COUNT             36
 #define JOKER_INDEX                 34         
+
+#define W(n)    (std::abs(n)-1)
+#define T(n)    (9+std::abs(n)-1)
+#define D(n)    (18+std::abs(n)-1)
+#define F(n)    (27+std::abs(n)-1)
 
 // 获取牌id的花色
 int get_card_shape_byidx(char idx);
@@ -103,6 +102,11 @@ static void idxs_add(cardidxs* c, char idx, char add) {
 }
 
 template <typename...Args>
+static void idxs_add_args(cardidxs* c, Args&&... args) {
+    (..., idxs_add(c, args, 1));
+}
+
+template <typename...Args>
 static void init_unititem(cardsunititem* u, char t, Args&&... is) {
     u->type = t;
     char i = 0;
@@ -130,7 +134,7 @@ static void pop_cardsunit_item(cardsunit* us) {
 static void print_cardidx(cardidxs* c, std::ostream& os) {
     for(int i = 0; i < HAND_CARDIDX_LAY; ++i) {
         for(int j = 0; j < c->idxs[i]; ++j) {
-            os << get_card_name(i);
+            os << get_card_name(i) << ",";
         }
     }
     os << std::endl;
