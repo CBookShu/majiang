@@ -3,27 +3,35 @@
 #include "mj_utils.h"
 #include "test.h"
 
-static bool _complete_func(cardidxs*c,hand_card_units* p) {
-    int joker = c->idxs[JOKER_INDEX];
-    int sz_before = p->M.count + p->D.count + p->J.count + p->P.count;
+typedef struct pack_calc_ctx {
+    cardidxs* c;
+    hand_card_units p;
+    int jokerleft;
+    bool (* complete_func)(pack_calc_ctx*);
+    bool (* travel_func)(hu_card_units* u);
+}pack_calc_ctx;
+
+static bool _complete_canhu_func(pack_calc_ctx* ctx) {
+    int joker = ctx->c->idxs[JOKER_INDEX];
+    int sz_before = ctx->p.M.count + ctx->p.D.count + ctx->p.J.count + ctx->p.P.count;
     if(sz_before == 0) {
         // 只有财神
         for(int i = 0; i < (joker-2)/3; ++i) {
-            auto* item = p->M.grap();
+            auto* item = ctx->p.M.grap();
             *item = hui_M_3JK();
         }
-        auto* item = p->J.grap();
+        auto* item = ctx->p.J.grap();
         *item = hui_J_2JK();
-        c->idxs[JOKER_INDEX] = 0;
+        ctx->c->idxs[JOKER_INDEX] = 0;
     }
 
-    int sz_after = p->M.count + p->D.count + p->J.count + p->P.count;
+    int sz_after = ctx->p.M.count + ctx->p.D.count + ctx->p.J.count + ctx->p.P.count;
     bool res = false;
     if(sz_after) {
         do {
-            int cur = calc_mdjp(p);
+            int cur = calc_mdjp(&ctx->p);
             int* des;        
-            auto n = get_hu_mdjp_des_4m1j(c->idxs[JOKER_INDEX], des);
+            auto n = get_hu_mdjp_des_4m1j(ctx->c->idxs[JOKER_INDEX], des);
             for(int i = 0; i < n; ++i) {
                 if(cur == des[i]) {
                     // 4m+1j 胡
@@ -34,7 +42,7 @@ static bool _complete_func(cardidxs*c,hand_card_units* p) {
             if(res) {
                 break;
             }
-            n = get_hu_mdjp_des_7j(c->idxs[JOKER_INDEX], des);
+            n = get_hu_mdjp_des_7j(ctx->c->idxs[JOKER_INDEX], des);
             for(int i = 0; i < n; ++i) {
             if(cur == des[i]) {
                 // 7j 胡
@@ -46,57 +54,88 @@ static bool _complete_func(cardidxs*c,hand_card_units* p) {
     }
     if(sz_before == 0) {
         // 还原
-        c->idxs[JOKER_INDEX] = joker;
+        ctx->c->idxs[JOKER_INDEX] = joker;
         for(int i = 0; i < (joker-2)/3; ++i) {
-            p->M.pop();
+            ctx->p.M.pop();
         }
-        p->J.pop();
+        ctx->p.J.pop();
     }
     return res;
 }
 
-static bool _pack_func(cardidxs*c, hand_card_units* p, int jokerleft) {
+static bool _complete_travel_func(pack_calc_ctx* ctx) {
+    int joker = ctx->c->idxs[JOKER_INDEX];
+    int sz_before = ctx->p.M.count + ctx->p.D.count + ctx->p.J.count + ctx->p.P.count;
+    if(sz_before == 0) {
+        // 只有财神
+        for(int i = 0; i < (joker-2)/3; ++i) {
+            auto* item = ctx->p.M.grap();
+            *item = hui_M_3JK();
+        }
+        auto* item = ctx->p.J.grap();
+        *item = hui_J_2JK();
+        ctx->c->idxs[JOKER_INDEX] = 0;
+    }
+
+    int sz_after = ctx->p.M.count + ctx->p.D.count + ctx->p.J.count + ctx->p.P.count;
+    bool res = false;
+    if(sz_after) {
+        mix_hu_mdjp_travel(ctx->c->idxs[JOKER_INDEX], &ctx->p, ctx->travel_func);
+    }
+    if(sz_before == 0) {
+        // 还原
+        ctx->c->idxs[JOKER_INDEX] = joker;
+        for(int i = 0; i < (joker-2)/3; ++i) {
+            ctx->p.M.pop();
+        }
+        ctx->p.J.pop();
+    }
+    return res;
+}
+
+
+static bool _pack_func(pack_calc_ctx* ctx) {
     int pos = -1;
     for(int i = 0; i < HAND_CARDIDX_LAY_NOJOKER; ++i) {
-        if(c->idxs[i] > 0) {
+        if(ctx->c->idxs[i] > 0) {
             pos = i;
             break;
         }
     }
     if(pos == -1) {
-        return _complete_func(c,p);
+        return ctx->complete_func(ctx);
     }
 
     int v = get_card_value_byidx(pos);
     // M刻字
-    if (c->idxs[pos] >= 3) {
-        idxs_add(c, pos, -3);
-        auto* item = p->M.grap();
+    if (ctx->c->idxs[pos] >= 3) {
+        idxs_add(ctx->c, pos, -3);
+        auto* item = ctx->p.M.grap();
         hui_init(item, {pos,pos,pos}, UIT_M, M_KEZI);
-        auto r = _pack_func(c, p, jokerleft);
-        idxs_add(c, pos, 3);
-        p->M.pop();
+        auto r = _pack_func(ctx);
+        idxs_add(ctx->c, pos, 3);
+        ctx->p.M.pop();
         if (r) {
             return true;
         }
     }
     // M顺
     if(pos < HAND_CARDIDX_LAY_FENGSTART) {
-        if(v <= 7 && c->idxs[pos+1] > 0 && c->idxs[pos+2] > 0) {
+        if(v <= 7 && ctx->c->idxs[pos+1] > 0 && ctx->c->idxs[pos+2] > 0) {
             UnitSubType subtype = M_ZHONG;
             if(v == 1 || v == 7) {
                 subtype = M_BIAN;
             }
-            idxs_add(c, pos, -1);
-            idxs_add(c, pos+1, -1);
-            idxs_add(c, pos+2, -1);
-            auto* item = p->M.grap();
+            idxs_add(ctx->c, pos, -1);
+            idxs_add(ctx->c, pos+1, -1);
+            idxs_add(ctx->c, pos+2, -1);
+            auto* item = ctx->p.M.grap();
             hui_init(item, {pos, pos+1, pos+2}, UIT_M, subtype);
-            auto r = _pack_func(c, p, jokerleft);
-            idxs_add(c, pos, 1);
-            idxs_add(c, pos+1, 1);
-            idxs_add(c, pos+2, 1);
-            p->M.pop();
+            auto r = _pack_func(ctx);
+            idxs_add(ctx->c, pos, 1);
+            idxs_add(ctx->c, pos+1, 1);
+            idxs_add(ctx->c, pos+2, 1);
+            ctx->p.M.pop();
             if(r) {
                 return true;
             }
@@ -104,43 +143,43 @@ static bool _pack_func(cardidxs*c, hand_card_units* p, int jokerleft) {
 
         // D 连和坎
         // 没有Joker的时候，就无法组成D
-        if(jokerleft > 0) {
+        if(ctx->jokerleft > 0) {
             // 连
-            if(v <= 8 && c->idxs[pos+1] > 0) {
+            if(v <= 8 && ctx->c->idxs[pos+1] > 0) {
                 UnitSubType subtype = D_LIAN_ZHONG;
                 if(v == 1 || v == 8) {
                     subtype = D_LIAN_BIAN;
                 }
-                jokerleft--;
-                idxs_add(c, pos, -1);
-                idxs_add(c, pos+1, -1);
-                auto* item = p->D.grap();
+                ctx->jokerleft--;
+                idxs_add(ctx->c, pos, -1);
+                idxs_add(ctx->c, pos+1, -1);
+                auto* item = ctx->p.D.grap();
                 hui_init(item, {pos, pos+1}, UIT_D, subtype);
-                auto r = _pack_func(c, p, jokerleft);
-                jokerleft++;
-                idxs_add(c, pos, 1);
-                idxs_add(c, pos+1, 1);
-                p->D.pop();
+                auto r = _pack_func(ctx);
+                ctx->jokerleft++;
+                idxs_add(ctx->c, pos, 1);
+                idxs_add(ctx->c, pos+1, 1);
+                ctx->p.D.pop();
                 if(r) {
                     return true;
                 }
             }
             // 坎
-            if(v <= 7 && c->idxs[pos+2] > 0) {
+            if(v <= 7 && ctx->c->idxs[pos+2] > 0) {
                 UnitSubType subtype = D_KAN_ZHONG;
                 if(v == 1 || v == 7) {
                     subtype = D_KAN_BIAN;
                 }
-                jokerleft--;
-                idxs_add(c, pos, -1);
-                idxs_add(c, pos+2, -1);
-                auto* item = p->D.grap();
+                ctx->jokerleft--;
+                idxs_add(ctx->c, pos, -1);
+                idxs_add(ctx->c, pos+2, -1);
+                auto* item = ctx->p.D.grap();
                 hui_init(item, {pos, pos+2}, UIT_D, subtype);
-                auto r = _pack_func(c, p, jokerleft);
-                jokerleft++;
-                idxs_add(c, pos, 1);
-                idxs_add(c, pos+2, 1);
-                p->D.pop();
+                auto r = _pack_func(ctx);
+                ctx->jokerleft++;
+                idxs_add(ctx->c, pos, 1);
+                idxs_add(ctx->c, pos+2, 1);
+                ctx->p.D.pop();
                 if(r) {
                     return true;
                 }
@@ -149,7 +188,7 @@ static bool _pack_func(cardidxs*c, hand_card_units* p, int jokerleft) {
     }
 
     // 将
-    if (c->idxs[pos] >= 2) {
+    if (ctx->c->idxs[pos] >= 2) {
         UnitSubType subtype = J_ZHONG;
         if(pos >= HAND_CARDIDX_LAY_FENGSTART) {
             subtype = J_FB;
@@ -160,21 +199,21 @@ static bool _pack_func(cardidxs*c, hand_card_units* p, int jokerleft) {
                 subtype = J_28;
             }
         }
-        idxs_add(c, pos, -1);
-        idxs_add(c, pos, -1);
-        auto* item = p->J.grap();
+        idxs_add(ctx->c, pos, -1);
+        idxs_add(ctx->c, pos, -1);
+        auto* item = ctx->p.J.grap();
         hui_init(item, {pos, pos}, UIT_J, subtype);
-        auto r = _pack_func(c, p, jokerleft);
-        idxs_add(c, pos, 1);
-        idxs_add(c, pos, 1);
-        p->J.pop();
+        auto r = _pack_func(ctx);
+        idxs_add(ctx->c, pos, 1);
+        idxs_add(ctx->c, pos, 1);
+        ctx->p.J.pop();
         if(r) {
             return true;
         }
     }
 
     // 每个单张都需要Joker最终才能胡！
-    if(c->idxs[pos] == 1 && jokerleft > 0) {
+    if(ctx->c->idxs[pos] == 1 && ctx->jokerleft > 0) {
         UnitSubType subtype = P_ZHONG;
         if(pos >= HAND_CARDIDX_LAY_FENGSTART) {
             subtype = P_FB;
@@ -185,14 +224,14 @@ static bool _pack_func(cardidxs*c, hand_card_units* p, int jokerleft) {
                 subtype = P_28;
             }
         }
-        jokerleft--;
-        idxs_add(c, pos, -1);
-        auto* item = p->P.grap();
+        ctx->jokerleft--;
+        idxs_add(ctx->c, pos, -1);
+        auto* item = ctx->p.P.grap();
         hui_init(item, {pos}, UIT_P, subtype);
-        auto r = _pack_func(c, p, jokerleft);
-        jokerleft++;
-        idxs_add(c, pos, 1);
-        p->P.pop();
+        auto r = _pack_func(ctx);
+        ctx->jokerleft++;
+        idxs_add(ctx->c, pos, 1);
+        ctx->p.P.pop();
         if(r) {
             return true;
         }
@@ -203,10 +242,23 @@ static bool _pack_func(cardidxs*c, hand_card_units* p, int jokerleft) {
 
 bool canhu_3(cardidxs *c)
 {
-    int joker = c->idxs[JOKER_INDEX];
-    hand_card_units hcu;
-    zero_struct(hcu);
-    return _pack_func(c, &hcu, joker);
+    pack_calc_ctx ctx;
+    zero_struct(ctx);
+    ctx.c = c;
+    ctx.jokerleft = c->idxs[JOKER_INDEX];
+    ctx.complete_func = _complete_canhu_func;
+    return _pack_func(&ctx);
+}
+
+void travel_all_hu_3(cardidxs *c, bool (*f)(hu_card_units *))
+{
+    pack_calc_ctx ctx;
+    zero_struct(ctx);
+    ctx.c = c;
+    ctx.jokerleft = c->idxs[JOKER_INDEX];
+    ctx.complete_func = _complete_travel_func;
+    ctx.travel_func = f;
+    _pack_func(&ctx);
 }
 
 static void test_hu_units() {

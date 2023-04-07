@@ -58,9 +58,7 @@ typedef struct hand_card_units {
     c_static_array<hu_unit_item, JOKER_MAX> D;
     c_static_array<hu_unit_item, 7> J;
     c_static_array<hu_unit_item, JOKER_MAX> P;
-    int joker;
 }hand_card_units;
-
 
 int hui_count(UnitSubType type);
 void hui_init(hu_unit_item* p, std::initializer_list<int>&& cards, UnitType type, UnitSubType subtype);
@@ -90,12 +88,14 @@ static void print_hui_array(c_static_array<hu_unit_item, N>* arrp, std::ostream&
 
 // D+1JK=M
 int hui_D2M(hu_unit_item* d, hu_unit_item ms[2]);
+c_static_array<hu_unit_item, 2> hui_D2M_1(hu_unit_item* d);
 
 // J+1JK=M
 hu_unit_item hui_J2M(hu_unit_item* j);
 
 // P+1JK=J
 hu_unit_item hui_P2J(hu_unit_item* p);
+hu_unit_item hui_P2J_1(hu_unit_item&& p);
 
 // P+2JK=M
 hu_unit_item hui_P2M(hu_unit_item* p);
@@ -103,3 +103,4 @@ hu_unit_item hui_P2M(hu_unit_item* p);
 int calc_mdjp(hand_card_units* p);
 int get_hu_mdjp_des_4m1j(int joker, int*& des);
 int get_hu_mdjp_des_7j(int joker, int*& des);
+void mix_hu_mdjp_travel(int joker, hand_card_units* p, bool(*func)(hu_card_units* u));

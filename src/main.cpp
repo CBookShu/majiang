@@ -12,8 +12,9 @@
 
 using namespace std;
 
-static bool check_algo_with_algo1(cardidxs* ve, bool (canhu_f)(cardidxs *c)) {
-    #define MAX_COUNT (100 * 10000)
+template <typename F>
+static bool random_test_cards(F fuc) {
+    #define MAX_COUNT (800 * 10000)
     std::unique_ptr<cardidxs[]> v = std::make_unique<cardidxs[]>(MAX_COUNT);
     zero_struct(v.get());
     srand(1);
@@ -21,9 +22,9 @@ static bool check_algo_with_algo1(cardidxs* ve, bool (canhu_f)(cardidxs *c)) {
     for(int i = 0; i < HAND_CARDIDX_LAY_NOJOKER; ++i) {
         memset(cards+i*4, i, 4);
     }
-    int joker_count = JOKER_MAX;
     for(int i = 0; i < MAX_COUNT; ++i) {
         std::random_shuffle(std::begin(cards), std::end(cards));
+        int joker_count = rand() % (JOKER_MAX + 1);
         v[i].count = HAND_CARDS_COUNT;
         for(int j = 0; j < HAND_CARDS_COUNT - joker_count;++j) {
             v[i].idxs[cards[j]]++;
@@ -31,46 +32,33 @@ static bool check_algo_with_algo1(cardidxs* ve, bool (canhu_f)(cardidxs *c)) {
         v[i].idxs[JOKER_INDEX] = joker_count;
     }
 
-    bool (*f)(cardsunit*) = nullptr;
-    f = [](cardsunit* u){
-        print_cardsunit(u, std::cout);
-        return false;
-    };
-
     std::cout << "start" << std::endl;
-    int hu = 0;
     auto now = std::chrono::system_clock::now();
-    for(int i = 0; i < MAX_COUNT; ++i) {
-        if(canhu(&v[i]) != canhu_f(&v[i])) {
-            print_cardidx(&v[i], std::cout);
-            *ve = v[i];
+    int i = 0;
+    for(i = 0; i < MAX_COUNT; ++i) {
+        if(!fuc(&v[i])) {
             return true;
         }
-        // travel_all_hu(&v[i], f);
     }
     std::cout << "end" << std::endl;
     auto after = std::chrono::system_clock::now();
     auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(after-now).count();
-    std::cout << "回溯法:" << MAX_COUNT / 10000 << "万次，time:" << diff << "ms" << std::endl;
-	std::cout << "Hu: " << hu << std::endl;
+    std::cout << "" << i << "次,time:" << diff << "ms" << std::endl;
     return false;
-}
-
-static void test_1(cardidxs v) {
-    print_cardidx(&v, std::cout);
-    auto b1 = canhu(&v);
-    auto b2 = canhu_2(&v);
-
-    std::cout << b1 << b2 << std::endl;
 }
 
 static void check_algo1_algo2() {
     gen_cache();
-    cardidxs v;
-    zero_struct(v);
-    if(check_algo_with_algo1(&v, canhu_2)) {
-        test_1(v);
-    }
+    random_test_cards([](cardidxs* c){
+        auto b1 = canhu(c);
+        auto b2 = canhu_2(c);
+        if(b1 != b2) {
+            print_cardidx(c, std::cout);
+            std::cout << b1 << b2 << std::endl;
+            return false;
+        }
+        return true;
+    });
 }
 
 static void test_2(cardidxs v) {
@@ -83,23 +71,79 @@ static void test_2(cardidxs v) {
 
 // TODO: 验证canhu_3 的正确性
 static void check_algo1_algo3() {
-    gen_cache();
-    cardidxs v;
-    zero_struct(v);
-    if(check_algo_with_algo1(&v, canhu_3)) {
-        test_2(v);
-    }
+    random_test_cards([](cardidxs* c){
+        auto b1 = canhu(c);
+        auto b2 = canhu_3(c);
+        if(b1 != b2) {
+            print_cardidx(c, std::cout);
+            std::cout << b1 << b2 << std::endl;
+            return false;
+        }
+        return true;
+    });
 }
+
+static void benchmark_canhu() {
+    TEST_CALL([](){
+        random_test_cards([](cardidxs* c){
+            canhu(c);
+            return true;
+        });
+    });
+
+    TEST_CALL([](){
+        random_test_cards([](cardidxs* c){
+            canhu_2(c);
+            return true;
+        });
+    });
+
+    TEST_CALL([](){
+        random_test_cards([](cardidxs* c){
+            canhu_3(c);
+            return true;
+        });
+    });
+}
+
+static void benchmark_travelhu() {
+    bool (*f)(cardsunit*) = nullptr;
+    f = [](cardsunit* u){
+        // print_cardsunit(u, std::cout);
+        return false;
+    };
+    bool(*f1) (hu_card_units*) = nullptr;
+    f1 = [](hu_card_units* u){
+        return false;
+    };
+
+    TEST_CALL([&](){
+        random_test_cards([&](cardidxs* u){
+            travel_all_hu(u, f);
+            return true;
+        });
+    });
+
+    // TEST_CALL([](){
+    //     cardidxs v;
+    //     zero_struct(v);
+    //     check_algo_with_algo1(&v, canhu_2);
+    // });
+
+    TEST_CALL([&](){
+        random_test_cards([&](cardidxs* u){
+            travel_all_hu_3(u, f1);
+            return true;
+        });
+    });
+}
+
 
 int main(int argc, char** argv)
 {
-    // mj_algo3_test();
-    check_algo1_algo3();
-
-    // cardidxs v;
-    // zero_struct(v);
-    // idxs_add_args(&v, T(2),T(6),D(6),F(2),F(3),F(3),F(5),F(6),JOKER_INDEX,JOKER_INDEX,JOKER_INDEX,JOKER_INDEX,JOKER_INDEX,JOKER_INDEX);
-    // canhu_3(&v);
-
+    // check_algo1_algo2();
+    // check_algo1_algo3();
+    
+    // benchmark_canhu();
     return 0;
 }

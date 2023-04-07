@@ -47,4 +47,4 @@
 
 [缓存查表](CacheAlgo.md)
 
-[优化回溯算法，超越查表](TotalBackTraceAlgo.md)
+[优化回溯算法](TotalBackTraceAlgo.md)

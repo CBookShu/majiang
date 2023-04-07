@@ -34,7 +34,15 @@ struct c_static_array {
         }
         return &t[count-1];
     }
-
+    void push(T&& t) {
+        *grap() = std::forward<T>(t);
+    }
+    void push(T& t) {
+        *grap() = t;
+    }
+    auto pat(int pos)->T* {
+        return &t[pos];
+    }
     // support op like c array
     T& operator[](int pos) {
         return t[pos];
