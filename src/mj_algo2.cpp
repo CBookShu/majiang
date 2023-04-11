@@ -1,4 +1,5 @@
 #include "mj_algo2.h"
+#include "doctest.h"
 #include "test.h"
 #include <sstream>
 #include <unordered_set>
@@ -242,9 +243,9 @@ static void test_idxs_convert_cardskey() {
     std::memset(&idxs, 0, sizeof(idxs));
 
     // 1W,1W,2W,2W,3W,3W,4W,4W,5W,6W,7W
-    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
-    idxs_add(&idxs, W(4), 2);idxs_add(&idxs, W(5), 1);idxs_add(&idxs, W(6), 1);
-    idxs_add(&idxs, W(7), 1);
+    idxs_add(&idxs, Wan(1), 2);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 2);
+    idxs_add(&idxs, Wan(4), 2);idxs_add(&idxs, Wan(5), 1);idxs_add(&idxs, Wan(6), 1);
+    idxs_add(&idxs, Wan(7), 1);
 
     std::stringstream ss[2];
     auto k = idx2_cardskey(&idxs, SHAPE_WAN, nullptr);
@@ -259,36 +260,38 @@ static void test_idxs_convert_cardskey() {
     assert(ss[0].str() == ss[1].str());
 }
 
-static void test_gen_cache() {
-    gen_cache();
+TEST_SUITE_BEGIN("mj_algo2");
+
+TEST_CASE("test_gen_cache") {
+    TEST_CALL(gen_cache);
 }
 
-static void test_can_hu() {
+TEST_CASE("test_can_hu") {
     struct cardidxs idxs;
     std::memset(&idxs, 0, sizeof(idxs));
     // 2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T,JOKER
     idxs_add(&idxs, JOKER_INDEX, 1);idxs_add(&idxs, 2, 1);idxs_add(&idxs, 3, 1);
-    idxs_add(&idxs, W(4), 3);idxs_add(&idxs, W(8), 2);
-    idxs_add(&idxs, T(1), 1);idxs_add(&idxs, T(2), 1);idxs_add(&idxs, T(3), 1);
-    idxs_add(&idxs, T(6), 1);idxs_add(&idxs, T(7), 1);idxs_add(&idxs, T(8), 1);
+    idxs_add(&idxs, Wan(4), 3);idxs_add(&idxs, Wan(8), 2);
+    idxs_add(&idxs, Tiao(1), 1);idxs_add(&idxs, Tiao(2), 1);idxs_add(&idxs, Tiao(3), 1);
+    idxs_add(&idxs, Tiao(6), 1);idxs_add(&idxs, Tiao(7), 1);idxs_add(&idxs, Tiao(8), 1);
     assert(canhu_2(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T,9T9T,JOKER
-    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
-    idxs_add(&idxs, T(4), 2);idxs_add(&idxs, T(7), 3);idxs_add(&idxs, T(9), 2);
+    idxs_add(&idxs, Wan(1), 2);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 2);
+    idxs_add(&idxs, Tiao(4), 2);idxs_add(&idxs, Tiao(7), 3);idxs_add(&idxs, Tiao(9), 2);
     idxs_add(&idxs, JOKER_INDEX, 1);
     assert(canhu_2(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W,3W3W3W,7W7W,7W8W9W,JOKER
-    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 3);
-    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
+    idxs_add(&idxs, Wan(1), 3);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 3);
+    idxs_add(&idxs, Wan(7), 3);idxs_add(&idxs, Wan(8), 1);idxs_add(&idxs, Wan(9), 1);
     idxs_add(&idxs, JOKER_INDEX, 1);
     assert(canhu_2(&idxs));
 }
 
-static void test_rnd_canhu_2() {
+TEST_CASE("test_rnd_canhu_2") {
     #define MAX_COUNT (9 * 100 * 10000)
     std::unique_ptr<cardidxs[]> v = std::make_unique<cardidxs[]>(MAX_COUNT);
     std::memset(v.get(), 0, sizeof(v));
@@ -319,14 +322,4 @@ static void test_rnd_canhu_2() {
 	std::cout << "Hu: " << hu << std::endl;
 }
 
-void test_algo2()
-{
-    // TEST_CALL(test_idxs_convert_cardskey);
-
-    // TEST_CALL(test_gen_cache);
-
-    // TEST_CALL(test_can_hu);
-
-    TEST_CALL(test_gen_cache);
-    // TEST_CALL(test_rnd_canhu_2);
-}
+TEST_SUITE_END;

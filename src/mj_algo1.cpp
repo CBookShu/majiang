@@ -1,5 +1,6 @@
 #include "mj_algo1.h"
 #include "test.h"
+#include "doctest.h"
 #include <cstring>
 #include <array>
 #include <algorithm>
@@ -617,43 +618,45 @@ void travel_all_hu(cardidxs *c, bool (*f)(cardsunit *))
     return;
 }
 
-void test_canhu_nojoker() {
+TEST_SUITE_BEGIN("mj_algo1");
+
+TEST_CASE("test_canhu_nojoker") {
     struct cardidxs idxs;
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T
-    idxs_add(&idxs, W(1), 1);idxs_add(&idxs, W(2), 1);idxs_add(&idxs, W(3), 1);
-    idxs_add(&idxs, W(4), 3);idxs_add(&idxs, W(8), 2);
-    idxs_add(&idxs, T(1), 1);idxs_add(&idxs, T(2), 1);idxs_add(&idxs, T(3), 1);
-    idxs_add(&idxs, T(6), 1);idxs_add(&idxs, T(7), 1);idxs_add(&idxs, T(8), 1);
+    idxs_add(&idxs, Wan(1), 1);idxs_add(&idxs, Wan(2), 1);idxs_add(&idxs, Wan(3), 1);
+    idxs_add(&idxs, Wan(4), 3);idxs_add(&idxs, Wan(8), 2);
+    idxs_add(&idxs, Tiao(1), 1);idxs_add(&idxs, Tiao(2), 1);idxs_add(&idxs, Tiao(3), 1);
+    idxs_add(&idxs, Tiao(6), 1);idxs_add(&idxs, Tiao(7), 1);idxs_add(&idxs, Tiao(8), 1);
     assert(canhu_nojoker(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T7T,9T9T
-    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
-    idxs_add(&idxs, W(4), 2);idxs_add(&idxs, T(7), 4);idxs_add(&idxs, T(9), 2);
+    idxs_add(&idxs, Wan(1), 2);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 2);
+    idxs_add(&idxs, Wan(4), 2);idxs_add(&idxs, Tiao(7), 4);idxs_add(&idxs, Tiao(9), 2);
     assert(canhu_nojoker(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W2W,3W3W3W,7W7W,7W8W9W
     // 1W2W3W,1W2W3W,1W2W3W,7W7W,7W8W9W
-    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 3);idxs_add(&idxs, W(3), 3);
-    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
+    idxs_add(&idxs, Wan(1), 3);idxs_add(&idxs, Wan(2), 3);idxs_add(&idxs, Wan(3), 3);
+    idxs_add(&idxs, Wan(7), 3);idxs_add(&idxs, Wan(8), 1);idxs_add(&idxs, Wan(9), 1);
     assert(canhu_nojoker(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W2W,7W7W,7W8W9W,F1F1F1
-    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 3);idxs_add(&idxs, F(1), 3);
-    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
+    idxs_add(&idxs, Wan(1), 3);idxs_add(&idxs, Wan(2), 3);idxs_add(&idxs, Feng(1), 3);
+    idxs_add(&idxs, Wan(7), 3);idxs_add(&idxs, Wan(8), 1);idxs_add(&idxs, Wan(9), 1);
     assert(canhu_nojoker(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W2W,7W7W,7W8W9W,F1F2F3
-    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 3);idxs_add(&idxs, F(1), 1);idxs_add(&idxs, F(2), 1);idxs_add(&idxs, F(3), 1);
-    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
+    idxs_add(&idxs, Wan(1), 3);idxs_add(&idxs, Wan(2), 3);idxs_add(&idxs, Feng(1), 1);idxs_add(&idxs, Feng(2), 1);idxs_add(&idxs, Feng(3), 1);
+    idxs_add(&idxs, Wan(7), 3);idxs_add(&idxs, Wan(8), 1);idxs_add(&idxs, Wan(9), 1);
     assert(!canhu_nojoker(&idxs));
 }
 
-void test_travel_all_hu_nojoker() {
+TEST_CASE("test_travel_all_hu_nojoker") {
     bool (*f)(cardsunit*) = nullptr;
     f = [](cardsunit* u){
         print_cardsunit(u, std::cout);
@@ -662,27 +665,27 @@ void test_travel_all_hu_nojoker() {
     struct cardidxs idxs;
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T
-    idxs_add(&idxs, W(1), 1);idxs_add(&idxs, W(2), 1);idxs_add(&idxs, W(3), 1);
-    idxs_add(&idxs, W(4), 3);idxs_add(&idxs, W(8), 2);
-    idxs_add(&idxs, T(1), 1);idxs_add(&idxs, T(2), 1);idxs_add(&idxs, T(3), 1);
-    idxs_add(&idxs, T(6), 1);idxs_add(&idxs, T(7), 1);idxs_add(&idxs, T(8), 1);
+    idxs_add(&idxs, Wan(1), 1);idxs_add(&idxs, Wan(2), 1);idxs_add(&idxs, Wan(3), 1);
+    idxs_add(&idxs, Wan(4), 3);idxs_add(&idxs, Wan(8), 2);
+    idxs_add(&idxs, Tiao(1), 1);idxs_add(&idxs, Tiao(2), 1);idxs_add(&idxs, Tiao(3), 1);
+    idxs_add(&idxs, Tiao(6), 1);idxs_add(&idxs, Tiao(7), 1);idxs_add(&idxs, Tiao(8), 1);
     travel_all_hu_nojoker(&idxs, f);
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T7T,9T9T
-    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
-    idxs_add(&idxs, W(4), 2);idxs_add(&idxs, T(7), 4);idxs_add(&idxs, T(9), 2);
+    idxs_add(&idxs, Wan(1), 2);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 2);
+    idxs_add(&idxs, Wan(4), 2);idxs_add(&idxs, Tiao(7), 4);idxs_add(&idxs, Tiao(9), 2);
     travel_all_hu_nojoker(&idxs, f);
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W2W,3W3W3W,7W7W,7W8W9W
     // 1W2W3W,1W2W3W,1W2W3W,7W7W,7W8W9W
-    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 3);idxs_add(&idxs, W(3), 3);
-    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
+    idxs_add(&idxs, Wan(1), 3);idxs_add(&idxs, Wan(2), 3);idxs_add(&idxs, Wan(3), 3);
+    idxs_add(&idxs, Wan(7), 3);idxs_add(&idxs, Wan(8), 1);idxs_add(&idxs, Wan(9), 1);
     travel_all_hu_nojoker(&idxs, f);
 }
 
-void test_rnd_travel_nojoker() {
+TEST_CASE("test_rnd_travel_nojoker") {
     bool (*f)(cardsunit*) = nullptr;
     f = [](cardsunit* u){
         print_cardsunit(u, std::cout);
@@ -723,33 +726,33 @@ void test_rnd_travel_nojoker() {
     }
 }
 
-void test_canhu() {
+TEST_CASE("test_canhu") {
     struct cardidxs idxs;
     std::memset(&idxs, 0, sizeof(idxs));
     // 2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T,JOKER
     idxs_add(&idxs, JOKER_INDEX, 1);idxs_add(&idxs, 2, 1);idxs_add(&idxs, 3, 1);
-    idxs_add(&idxs, W(4), 3);idxs_add(&idxs, W(8), 2);
-    idxs_add(&idxs, T(1), 1);idxs_add(&idxs, T(2), 1);idxs_add(&idxs, T(3), 1);
-    idxs_add(&idxs, T(6), 1);idxs_add(&idxs, T(7), 1);idxs_add(&idxs, T(8), 1);
+    idxs_add(&idxs, Wan(4), 3);idxs_add(&idxs, Wan(8), 2);
+    idxs_add(&idxs, Tiao(1), 1);idxs_add(&idxs, Tiao(2), 1);idxs_add(&idxs, Tiao(3), 1);
+    idxs_add(&idxs, Tiao(6), 1);idxs_add(&idxs, Tiao(7), 1);idxs_add(&idxs, Tiao(8), 1);
     assert(canhu(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T,9T9T,JOKER
-    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
-    idxs_add(&idxs, T(4), 2);idxs_add(&idxs, T(7), 3);idxs_add(&idxs, T(9), 2);
+    idxs_add(&idxs, Wan(1), 2);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 2);
+    idxs_add(&idxs, Tiao(4), 2);idxs_add(&idxs, Tiao(7), 3);idxs_add(&idxs, Tiao(9), 2);
     idxs_add(&idxs, JOKER_INDEX, 1);
     assert(canhu(&idxs));
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W,3W3W3W,7W7W,7W8W9W,JOKER
-    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 3);
-    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
+    idxs_add(&idxs, Wan(1), 3);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 3);
+    idxs_add(&idxs, Wan(7), 3);idxs_add(&idxs, Wan(8), 1);idxs_add(&idxs, Wan(9), 1);
     idxs_add(&idxs, JOKER_INDEX, 1);
     assert(canhu(&idxs));
 }
 
 
-void test_travel_all_hu() {
+TEST_CASE("test_travel_all_hu") {
     bool (*f)(cardsunit*) = nullptr;
     f = [](cardsunit* u){
         print_cardsunit(u, std::cout);
@@ -758,18 +761,18 @@ void test_travel_all_hu() {
     struct cardidxs idxs;
     std::memset(&idxs, 0, sizeof(idxs));
     // 2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T,JOKER
-    idxs_add(&idxs, JOKER_INDEX, 1);idxs_add(&idxs, W(2), 1);idxs_add(&idxs, W(3), 1);
-    idxs_add(&idxs, W(4), 3);idxs_add(&idxs, W(8), 2);
-    idxs_add(&idxs, T(1), 1);idxs_add(&idxs, T(2), 1);idxs_add(&idxs, T(3), 1);
-    idxs_add(&idxs, T(6), 1);idxs_add(&idxs, T(7), 1);idxs_add(&idxs, T(8), 1);
+    idxs_add(&idxs, JOKER_INDEX, 1);idxs_add(&idxs, Wan(2), 1);idxs_add(&idxs, Wan(3), 1);
+    idxs_add(&idxs, Wan(4), 3);idxs_add(&idxs, Wan(8), 2);
+    idxs_add(&idxs, Tiao(1), 1);idxs_add(&idxs, Tiao(2), 1);idxs_add(&idxs, Tiao(3), 1);
+    idxs_add(&idxs, Tiao(6), 1);idxs_add(&idxs, Tiao(7), 1);idxs_add(&idxs, Tiao(8), 1);
     std::cout << "begin calc idx:";
     print_cardidx(&idxs, std::cout);
     travel_all_hu(&idxs, f);
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T,9T9T,JOKER
-    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
-    idxs_add(&idxs, W(4), 2);idxs_add(&idxs, T(7), 3);idxs_add(&idxs, T(9), 2);
+    idxs_add(&idxs, Wan(1), 2);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 2);
+    idxs_add(&idxs, Wan(4), 2);idxs_add(&idxs, Tiao(7), 3);idxs_add(&idxs, Tiao(9), 2);
     idxs_add(&idxs, JOKER_INDEX, 1);
     std::cout << "begin calc idx:";
     print_cardidx(&idxs, std::cout);
@@ -777,15 +780,15 @@ void test_travel_all_hu() {
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W1W,2W2W,3W3W3W,7W7W,7W8W9W,JOKER
-    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 3);
-    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
+    idxs_add(&idxs, Wan(1), 3);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 3);
+    idxs_add(&idxs, Wan(7), 3);idxs_add(&idxs, Wan(8), 1);idxs_add(&idxs, Wan(9), 1);
     idxs_add(&idxs, JOKER_INDEX, 1);
     std::cout << "begin calc idx:";
     print_cardidx(&idxs, std::cout);
     travel_all_hu(&idxs, f);
 }
 
-void test_travel_1() {
+TEST_CASE("test_travel_1") {
     bool (*f)(cardsunit*) = nullptr;
     f = [](cardsunit* u){
         print_cardsunit(u, std::cout);
@@ -795,23 +798,23 @@ void test_travel_1() {
     std::memset(&idxs, 0, sizeof(idxs));
     // 1W1W4W5W6W5T5T5T1D9DJOKERJOKERJOKERJOKER
     idxs_add(&idxs, JOKER_INDEX, 4);
-    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(4), 1);
-    idxs_add(&idxs, W(5), 1);idxs_add(&idxs, W(6), 1);
-    idxs_add(&idxs, T(5), 3);idxs_add(&idxs, D(1), 1);
-    idxs_add(&idxs, D(9), 1);
+    idxs_add(&idxs, Wan(1), 2);idxs_add(&idxs, Wan(4), 1);
+    idxs_add(&idxs, Wan(5), 1);idxs_add(&idxs, Wan(6), 1);
+    idxs_add(&idxs, Tiao(5), 3);idxs_add(&idxs, Dong(1), 1);
+    idxs_add(&idxs, Dong(9), 1);
     //travel_all_hu(&idxs, f);
 
     std::memset(&idxs, 0, sizeof(idxs));
     // 3W3W2T3T4T6D6D8D9D 5JK
     idxs_add(&idxs, JOKER_INDEX, 5);
-    idxs_add(&idxs, W(3), 2); idxs_add(&idxs, T(2), 1);
-    idxs_add(&idxs, T(3), 1); idxs_add(&idxs, T(4), 1);
-    idxs_add(&idxs, D(6), 2); idxs_add(&idxs, D(8), 1);
-    idxs_add(&idxs, D(9), 1);
+    idxs_add(&idxs, Wan(3), 2); idxs_add(&idxs, Tiao(2), 1);
+    idxs_add(&idxs, Tiao(3), 1); idxs_add(&idxs, Tiao(4), 1);
+    idxs_add(&idxs, Dong(6), 2); idxs_add(&idxs, Dong(8), 1);
+    idxs_add(&idxs, Dong(9), 1);
     travel_all_hu(&idxs, f);
 }
 
-void test_rnd_travel() {
+TEST_CASE("test_rnd_travel") {
     bool (*f)(cardsunit*) = nullptr;
     f = [](cardsunit* u){
         // print_cardsunit(u, std::cout);
@@ -860,8 +863,8 @@ void test_rnd_travel() {
     std::cout << "big cost times:" << big_cost_time << std::endl;
 }
 
-static void test_rnd_canhu_1() {
-    #define MAX_COUNT (9 * 100 * 10000)
+TEST_CASE("test_rnd_canhu_1") {
+    #define MAX_COUNT (100 * 10000)
     std::unique_ptr<cardidxs[]> v = std::make_unique<cardidxs[]>(MAX_COUNT);
     std::memset(v.get(), 0, sizeof(v));
     srand(1);
@@ -891,16 +894,4 @@ static void test_rnd_canhu_1() {
 	std::cout << "Hu: " << hu << std::endl;
 }
 
-void test_algo1()
-{
-    TEST_CALL(test_canhu_nojoker);
-    TEST_CALL(test_travel_all_hu_nojoker);
-    TEST_CALL(test_rnd_travel_nojoker);
-
-
-    TEST_CALL(test_canhu);
-    TEST_CALL(test_travel_all_hu);
-    TEST_CALL(test_travel_1);
-    TEST_CALL(test_rnd_travel);
-    // TEST_CALL(test_rnd_canhu_1);
-}
+TEST_SUITE_END;

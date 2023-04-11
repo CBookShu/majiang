@@ -10,11 +10,14 @@
 #include "mj_algo3.h"
 #include "utils.h"
 
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
+
 using namespace std;
 
 template <typename F>
 static bool random_test_cards(F fuc) {
-    #define MAX_COUNT (800 * 10000)
+    #define MAX_COUNT (100 * 10000)
     std::unique_ptr<cardidxs[]> v = std::make_unique<cardidxs[]>(MAX_COUNT);
     zero_struct(v.get());
     srand(1);
@@ -47,9 +50,11 @@ static bool random_test_cards(F fuc) {
     return false;
 }
 
-static void check_algo1_algo2() {
+TEST_SUITE_BEGIN("main_test");
+
+TEST_CASE("check_1_2") {
     gen_cache();
-    random_test_cards([](cardidxs* c){
+    CHECK_FALSE(random_test_cards([](cardidxs* c){
         auto b1 = canhu(c);
         auto b2 = canhu_2(c);
         if(b1 != b2) {
@@ -58,20 +63,11 @@ static void check_algo1_algo2() {
             return false;
         }
         return true;
-    });
+    }));
 }
 
-static void test_2(cardidxs v) {
-    print_cardidx(&v, std::cout);
-    auto b1 = canhu(&v);
-    auto b2 = canhu_3(&v);
-
-    std::cout << b1 << b2 << std::endl;
-}
-
-// TODO: 验证canhu_3 的正确性
-static void check_algo1_algo3() {
-    random_test_cards([](cardidxs* c){
+TEST_CASE("check_1_3") {
+    CHECK_FALSE(random_test_cards([](cardidxs* c){
         auto b1 = canhu(c);
         auto b2 = canhu_3(c);
         if(b1 != b2) {
@@ -80,10 +76,10 @@ static void check_algo1_algo3() {
             return false;
         }
         return true;
-    });
+    }));
 }
 
-static void benchmark_canhu() {
+TEST_CASE("benchmark_canhu") {
     TEST_CALL([](){
         random_test_cards([](cardidxs* c){
             canhu(c);
@@ -106,7 +102,7 @@ static void benchmark_canhu() {
     });
 }
 
-static void benchmark_travelhu() {
+TEST_CASE("benchmark_travelhu") {
     bool (*f)(cardsunit*) = nullptr;
     f = [](cardsunit* u){
         // print_cardsunit(u, std::cout);
@@ -138,12 +134,4 @@ static void benchmark_travelhu() {
     });
 }
 
-
-int main(int argc, char** argv)
-{
-    // check_algo1_algo2();
-    // check_algo1_algo3();
-    
-    // benchmark_canhu();
-    return 0;
-}
+TEST_SUITE_END;

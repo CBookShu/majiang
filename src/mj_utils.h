@@ -51,10 +51,10 @@
 #define ONE_COLOR_COUNT             36
 #define JOKER_INDEX                 34         
 
-#define W(n)    (std::abs(n)-1)
-#define T(n)    (9+std::abs(n)-1)
-#define D(n)    (18+std::abs(n)-1)
-#define F(n)    (27+std::abs(n)-1)
+#define Wan(n)    (std::abs(n)-1)
+#define Tiao(n)    (9+std::abs(n)-1)
+#define Dong(n)    (18+std::abs(n)-1)
+#define Feng(n)    (27+std::abs(n)-1)
 
 // 获取牌id的花色
 int get_card_shape_byidx(char idx);

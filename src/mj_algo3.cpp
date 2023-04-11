@@ -2,6 +2,7 @@
 #include "mj_algo3_detail.h"
 #include "mj_utils.h"
 #include "test.h"
+#include "doctest.h"
 
 typedef struct pack_calc_ctx {
     cardidxs* c;
@@ -261,7 +262,9 @@ void travel_all_hu_3(cardidxs *c, bool (*f)(hu_card_units *))
     _pack_func(&ctx);
 }
 
-static void test_hu_units() {
+TEST_SUITE_BEGIN("mj_alog3");
+
+TEST_CASE("test_hu_units") {
     hu_card_units hcu;
     zero_struct(hcu);
     auto* item = hcu.M.grap();
@@ -271,33 +274,33 @@ static void test_hu_units() {
     print_hui_array(&hcu.M, std::cout);
 }
 
-static void test_canhu() {
+TEST_CASE("test_canhu") {
     struct cardidxs idxs;
     zero_struct(idxs);
     // 2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T,JOKER
     idxs_add(&idxs, JOKER_INDEX, 1);idxs_add(&idxs, 2, 1);idxs_add(&idxs, 3, 1);
-    idxs_add(&idxs, W(4), 3);idxs_add(&idxs, W(8), 2);
-    idxs_add(&idxs, T(1), 1);idxs_add(&idxs, T(2), 1);idxs_add(&idxs, T(3), 1);
-    idxs_add(&idxs, T(6), 1);idxs_add(&idxs, T(7), 1);idxs_add(&idxs, T(8), 1);
+    idxs_add(&idxs, Wan(4), 3);idxs_add(&idxs, Wan(8), 2);
+    idxs_add(&idxs, Tiao(1), 1);idxs_add(&idxs, Tiao(2), 1);idxs_add(&idxs, Tiao(3), 1);
+    idxs_add(&idxs, Tiao(6), 1);idxs_add(&idxs, Tiao(7), 1);idxs_add(&idxs, Tiao(8), 1);
     assert(canhu_3(&idxs));
 
     zero_struct(idxs);
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T,9T9T,JOKER
-    idxs_add(&idxs, W(1), 2);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 2);
-    idxs_add(&idxs, T(4), 2);idxs_add(&idxs, T(7), 3);idxs_add(&idxs, T(9), 2);
+    idxs_add(&idxs, Wan(1), 2);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 2);
+    idxs_add(&idxs, Tiao(4), 2);idxs_add(&idxs, Tiao(7), 3);idxs_add(&idxs, Tiao(9), 2);
     idxs_add(&idxs, JOKER_INDEX, 1);
     assert(canhu_3(&idxs));
 
     zero_struct(idxs);
     // 1W1W1W,2W2W,3W3W3W,7W7W,7W8W9W,JOKER
-    idxs_add(&idxs, W(1), 3);idxs_add(&idxs, W(2), 2);idxs_add(&idxs, W(3), 3);
-    idxs_add(&idxs, W(7), 3);idxs_add(&idxs, W(8), 1);idxs_add(&idxs, W(9), 1);
+    idxs_add(&idxs, Wan(1), 3);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 3);
+    idxs_add(&idxs, Wan(7), 3);idxs_add(&idxs, Wan(8), 1);idxs_add(&idxs, Wan(9), 1);
     idxs_add(&idxs, JOKER_INDEX, 1);
     assert(canhu_3(&idxs));
 }
 
-void mj_algo3_test()
-{
-    TEST_CALL(test_hu_units);
-    TEST_CALL(test_canhu);
+TEST_CASE("test_travelhu") {
+    // TODO:?
 }
+
+TEST_SUITE_END;
