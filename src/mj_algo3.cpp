@@ -300,7 +300,8 @@ TEST_CASE("test_canhu") {
 }
 
 TEST_CASE("test_travelhu") {
-    // TODO:?
+    // TODO: 未完成4,5,6 joker的代码
+    // 此外 travel_all_hu_3 回调函数的参数和mj_algo1的有不同，可以兼容一下
 }
 
 TEST_SUITE_END;

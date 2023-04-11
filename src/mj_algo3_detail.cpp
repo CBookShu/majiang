@@ -765,10 +765,10 @@ void mix_hu_mdjp_travel(int joker, hand_card_units* p, bool(*func)(hu_card_units
             QCALL();
         }
     } else if(joker == 4) {
-
+        // TODO:
     } else if(joker == 5) {
-
+        // TODO:
     } else if(joker == 6) {
-
+        // TODO:
     }
 }

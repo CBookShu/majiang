@@ -5,5 +5,3 @@
 void gen_cache();
 
 bool canhu_2(cardidxs* c);
-
-void test_algo2();
