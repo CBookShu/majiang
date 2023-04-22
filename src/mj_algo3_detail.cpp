@@ -221,7 +221,7 @@ hu_unit_item hui_P2M(hu_unit_item *p)
 
 #define MAKE_MDJP_TABLE(m,d,j,p) ChecAndGet<m,d,j,p,jk>()
 template<int M,int D,int J,int P, int JK>
-static int ChecAndGet() {
+static constexpr int ChecAndGet() {
     static_assert((M*3 + 2*D + 2*J + P + JK) == HAND_CARDS_COUNT);
     int res = M;
     res = res * 10 + D;
@@ -765,10 +765,223 @@ void mix_hu_mdjp_travel(int joker, hand_card_units* p, bool(*func)(hu_card_units
             QCALL();
         }
     } else if(joker == 4) {
-        // TODO:
+        constexpr int jk = 4;
+        if(CHECK_MDJP(3, 0, 0, 1)) {
+            {
+                // P+JK=J,3JK=M
+                zero_struct(u);
+                u.M = p->M;
+                u.M.push(hui_M_3JK());
+                u.J.push(hui_P2J(p->P.pat(0)));
+                QCALL();
+            }
+            {
+                // P+2JK=M,2JK=J
+                zero_struct(u);
+                u.M = p->M;
+                u.M.push(hui_P2M(p->P.pat(0)));
+                u.J.push(hui_J_2JK());
+                QCALL();
+            }
+        }
+        if(CHECK_MDJP(2, 2, 0, 0)) {
+            // 2D+2JK=2M,2JK=J
+            auto d2m1 = hui_D2M_1(p->D.pat(0));
+            auto d2m2 = hui_D2M_1(p->D.pat(1));
+            for(auto& m1:d2m1) {
+                for(auto& m2:d2m2) {
+                    zero_struct(u);
+                    u.M = p->M;
+                    u.M.push(m1);
+                    u.M.push(m2);
+                    u.J.push(hui_J_2JK());
+                    QCALL();
+                }
+            }
+        }
+        if (CHECK_MDJP(2, 1, 1, 0)) {
+            auto d2m = hui_D2M_1(p->D.pat(0));
+            {
+                // D+JK=M,3JK=M
+                for(auto&m:d2m) {
+                    zero_struct(u);
+                    u.M = p->M;
+                    u.J = p->J;
+                    u.M.push(m);
+                    u.M.push(hui_M_3JK());
+                    QCALL();
+                }
+            }
+            {
+                // D+JK=M,J+JK=M,2JK=J
+                for(auto&m:d2m) {
+                }
+            }
+        }
+        if(CHECK_MDJP(2, 1, 0, 2)) {
+            // D+JK=M,P+2JK=M,P+JK=J
+        }
+        if(CHECK_MDJP(2, 0, 2, 0)) {
+            {
+                // 2J+2JK=2M,2JK=J
+            }
+            {
+                // J+JK=M,3JK=M
+            }
+        }
+        if(CHECK_MDJP(2, 0, 1, 2)) {
+            {
+                // J+JK=M,P+2JK=M,P+JK=J
+            }
+            {
+                // 2P+4JK=2M
+            }
+        }
+        if(CHECK_MDJP(1, 3, 0, 1)) {
+            // 3D+3JK=3M,P+JK=J
+        }
+        if(CHECK_MDJP(1, 2, 1, 1)) {
+            {
+                // 2D+2JK=2M,P+2JK=M
+            }
+            {
+                // 2D+2JK=2M,J+JK=M,P+JK=J
+            }
+        }
+        if(CHECK_MDJP(1, 1, 2, 1)) {
+            {
+                // D+JK=M,J+JK=M,P+2JK=M
+            }
+            {
+                // D+JK=M,2J+2JK=M,P+JK=J
+            }
+        }
+        if(CHECK_MDJP(1, 0, 3, 1)) {
+            {
+                // 2J+2JK=2M,P+2JK=M
+            }
+            {
+                // 3J+3JK=3M,P+JK=J
+            }
+        }
+        if(CHECK_MDJP(0, 4, 1, 0)) {
+            // 4D+4JK=4M
+        }
+        if(CHECK_MDJP(0, 3, 2, 0)) {
+            // 3D+3JK=M,J+JK=M
+        }
+        if(CHECK_MDJP(0, 2, 3, 0)) {
+            // 2D+2JK=2M,2J+2JK=2M
+        }
+        if(CHECK_MDJP(0, 1, 4, 0)) {
+            // D+JK=M,3J+3JK=3M
+        }
+        if(CHECK_MDJP(0, 0, 5, 0)) {
+            // 4J+4JK=4M
+        }
+
     } else if(joker == 5) {
-        // TODO:
+        constexpr int jk = 5;
+        if(CHECK_MDJP(3, 0, 0, 0)) {
+
+        }
+        if(CHECK_MDJP(2, 1, 0, 1)) {
+
+        }
+        if(CHECK_MDJP(2, 0, 1, 1)) {
+
+        }
+        if(CHECK_MDJP(2, 0, 0, 3)) {
+
+        }
+        if(CHECK_MDJP(1, 3, 0, 0)) {
+
+        }
+        if(CHECK_MDJP(1, 2, 1, 0)) {
+
+        }
+        if(CHECK_MDJP(1, 2, 0, 2)) {
+
+        }
+        if(CHECK_MDJP(1, 1, 2, 0)) {
+
+        }
+        if(CHECK_MDJP(1, 1, 1, 2)) {
+
+        }
+        if(CHECK_MDJP(1, 0, 3, 0)) {
+
+        }
+        if(CHECK_MDJP(1, 0, 2, 2)) {
+
+        }
+        if(CHECK_MDJP(0, 0, 4, 1)) {
+
+        }
+        if(CHECK_MDJP(0, 4, 0, 1)) {
+
+        }
+        if(CHECK_MDJP(0, 3, 1, 1)) {
+
+        }
+        if(CHECK_MDJP(0, 2, 2, 1)) {
+
+        }
+        if(CHECK_MDJP(0, 1, 3, 1)) {
+
+        }
     } else if(joker == 6) {
-        // TODO:
+        constexpr int jk = 6;
+        if(CHECK_MDJP(2, 1, 0, 0)) {
+
+        }
+        if(CHECK_MDJP(2, 0, 1, 0)) {
+
+        }
+        if(CHECK_MDJP(2, 0, 0, 2)) {
+
+        }
+        if(CHECK_MDJP(1, 2, 0, 1)) {
+
+        }
+        if(CHECK_MDJP(1, 1, 1, 1)) {
+
+        }
+        if(CHECK_MDJP(1, 1, 0, 3)) {
+
+        }
+        if(CHECK_MDJP(1, 0, 2, 1)) {
+
+        }
+        if(CHECK_MDJP(1, 0, 1, 3)) {
+
+        }
+        if(CHECK_MDJP(0, 4, 0, 0)) {
+
+        }
+        if(CHECK_MDJP(0, 3, 1, 0)) {
+
+        }
+        if(CHECK_MDJP(0, 3, 0, 2)) {
+
+        }
+        if(CHECK_MDJP(0, 2, 2, 0)) {
+
+        }
+        if(CHECK_MDJP(0, 2, 1, 2)) {
+
+        }
+        if(CHECK_MDJP(0, 1, 3, 0)) {
+
+        }
+        if(CHECK_MDJP(0, 1, 2, 2)) {
+
+        }
+        if(CHECK_MDJP(0, 0, 4, 0)) {
+
+        }
+        if(CHECK_MDJP(0, 0, 3, 2)) {
+            
+        }
     }
 }
