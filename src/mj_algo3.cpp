@@ -278,25 +278,23 @@ TEST_CASE("test_canhu") {
     struct cardidxs idxs;
     zero_struct(idxs);
     // 2W3W,4W4W4W,8W8W,1T2T3T,6T7T8T,JOKER
-    idxs_add(&idxs, JOKER_INDEX, 1);idxs_add(&idxs, 2, 1);idxs_add(&idxs, 3, 1);
-    idxs_add(&idxs, Wan(4), 3);idxs_add(&idxs, Wan(8), 2);
-    idxs_add(&idxs, Tiao(1), 1);idxs_add(&idxs, Tiao(2), 1);idxs_add(&idxs, Tiao(3), 1);
-    idxs_add(&idxs, Tiao(6), 1);idxs_add(&idxs, Tiao(7), 1);idxs_add(&idxs, Tiao(8), 1);
-    assert(canhu_3(&idxs));
+    idxs_add_args(&idxs, Wan(2),Wan(3),Wan(4),Wan(4),Wan(4),Wan(8),Wan(8),
+    Tiao(1),Tiao(2),Tiao(3),Tiao(6),Tiao(7),Tiao(8),JOKER_INDEX);
+    REQUIRE(canhu_3(&idxs));
 
     zero_struct(idxs);
     // 1W1W,2W2W,3W3W,4W4W,7T7T7T,9T9T,JOKER
     idxs_add(&idxs, Wan(1), 2);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 2);
     idxs_add(&idxs, Tiao(4), 2);idxs_add(&idxs, Tiao(7), 3);idxs_add(&idxs, Tiao(9), 2);
     idxs_add(&idxs, JOKER_INDEX, 1);
-    assert(canhu_3(&idxs));
+    REQUIRE(canhu_3(&idxs));
 
     zero_struct(idxs);
     // 1W1W1W,2W2W,3W3W3W,7W7W,7W8W9W,JOKER
     idxs_add(&idxs, Wan(1), 3);idxs_add(&idxs, Wan(2), 2);idxs_add(&idxs, Wan(3), 3);
     idxs_add(&idxs, Wan(7), 3);idxs_add(&idxs, Wan(8), 1);idxs_add(&idxs, Wan(9), 1);
     idxs_add(&idxs, JOKER_INDEX, 1);
-    assert(canhu_3(&idxs));
+    REQUIRE(canhu_3(&idxs));
 }
 
 TEST_CASE("test_travelhu") {
