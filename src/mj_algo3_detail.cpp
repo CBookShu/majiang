@@ -1,5 +1,6 @@
 #include "mj_algo3_detail.h"
 #include "mj_utils.h"
+#include <tuple>
 
 int hui_count(UnitSubType type)
  {
@@ -1754,31 +1755,259 @@ void mix_hu_mdjp_travel(int joker, hand_card_units* p, bool(*func)(hu_card_units
             }
         }
         if(CHECK_MDJP(1, 1, 0, 3)) {
-
+            // D+JK=M,2P+4JK=2M,P+JK=J
+            for(auto&m:hui_D2M_1(p->D.begin())) {
+                for(int i = 0; i < 3; ++i) {
+                    zero_struct(u);
+                    u.M = p->M;
+                    u.M.push(m);
+                    u.M.push(hui_P2M(p->P.pat((i+1)%3)));
+                    u.M.push(hui_P2M(p->P.pat((i+2)%3)));
+                    u.J.push(hui_P2J(p->P.pat(i)));
+                    QCALL();
+                }
+            }
         }
         if(CHECK_MDJP(1, 0, 2, 1)) {
-
+            {
+                // 2J+2JK=2M,P+2JK=M,2JK=J
+                zero_struct(u);
+                u.M = p->M;
+                u.M.push(hui_J2M(p->J.pat(0)));
+                u.M.push(hui_J2M(p->J.pat(1)));
+                u.M.push(hui_P2J(p->P.begin()));
+                u.J.push(hui_J_2JK());
+                QCALL();
+            }
+            {
+                // 2J+2JK=2M,3JK=M,P+JK=J
+                zero_struct(u);
+                u.M = p->M;
+                u.M.push(hui_J2M(p->J.pat(0)));
+                u.M.push(hui_J2M(p->J.pat(1)));
+                u.M.push(hui_M_3JK());
+                u.J.push(hui_P2J(p->P.begin()));
+                QCALL();
+            }
+            {
+                // J+JK=M,3JK=M,P+2JK=M
+                for(int i = 0; i < 2; ++i) {
+                    zero_struct(u);
+                    u.M = p->M;
+                    u.M.push(hui_J2M(p->J.pat(i)));
+                    u.M.push(hui_M_3JK());
+                    u.M.push(hui_P2M(p->P.begin()));
+                    u.J.push(p->J[1-i]);
+                    QCALL();
+                }
+            }
         }
         if(CHECK_MDJP(1, 0, 1, 3)) {
-
+            {
+                // J+JK=M,2P+4JK=2M,P+JK=J
+                for(int i = 0; i < 3; ++i) {
+                    zero_struct(u);
+                    u.M = p->M;
+                    u.M.push(hui_J2M(p->J.begin()));
+                    u.M.push(hui_P2M(p->P.pat((i+1)%3)));
+                    u.M.push(hui_P2M(p->P.pat((i+2)%3)));
+                    u.J.push(hui_P2J(p->P.pat(i)));
+                    QCALL();
+                }
+            }
+            {
+                // 3P+6JK=3M
+                zero_struct(u);
+                u.M = p->M;
+                u.M.push(hui_P2M(p->P.pat(0)));
+                u.M.push(hui_P2M(p->P.pat(1)));
+                u.M.push(hui_P2M(p->P.pat(2)));
+                u.J.push(p->J[0]);
+                QCALL();
+            }
         }
         if(CHECK_MDJP(0, 4, 0, 0)) {
-
+            // 4D+4JK=4M,2JK=J
+            auto d2m = std::make_tuple(
+                hui_D2M_1(p->D.pat(0)),hui_D2M_1(p->D.pat(1)),
+                hui_D2M_1(p->D.pat(2)),hui_D2M_1(p->D.pat(3))
+            );
+            for(auto&m0:std::get<0>(d2m)) {
+                for(auto&m1:std::get<1>(d2m)) {
+                    for(auto&m2:std::get<2>(d2m)) {
+                        for(auto&m3:std::get<3>(d2m)) {
+                            zero_struct(u);
+                            u.M.push(m0);
+                            u.M.push(m1);
+                            u.M.push(m2);
+                            u.M.push(m3);
+                            u.J.push(hui_J_2JK());
+                            QCALL();
+                        }
+                    }
+                }
+            }
         }
         if(CHECK_MDJP(0, 3, 1, 0)) {
-
+            auto d2m = std::make_tuple(
+                hui_D2M_1(p->D.pat(0)),hui_D2M_1(p->D.pat(1)),
+                hui_D2M_1(p->D.pat(2))
+            );
+            {
+                // 3D+3JK=3M,J+JK=M,2JK=J
+                for(auto&m0:std::get<0>(d2m)) {
+                    for(auto&m1:std::get<1>(d2m)) {
+                        for(auto&m2:std::get<2>(d2m)) {
+                            zero_struct(u);
+                            u.M.push(m0);
+                            u.M.push(m1);
+                            u.M.push(m2);
+                            u.M.push(hui_J2M(p->J.begin()));
+                            u.J.push(hui_J_2JK());
+                            QCALL();
+                        }
+                    }
+                }
+            }
+            {
+                // 3D+3JK=3M,3JK=M
+                for(auto&m0:std::get<0>(d2m)) {
+                    for(auto&m1:std::get<1>(d2m)) {
+                        for(auto&m2:std::get<2>(d2m)) {
+                            zero_struct(u);
+                            u.M.push(m0);
+                            u.M.push(m1);
+                            u.M.push(m2);
+                            u.M.push(hui_M_3JK());
+                            u.J.push(p->J[0]);
+                            QCALL();
+                        }
+                    }
+                }
+            }
         }
         if(CHECK_MDJP(0, 3, 0, 2)) {
-
+            // 3D+3JK=3M,P+2JK=M,P+JK=J
+            auto d2m = std::make_tuple(
+                hui_D2M_1(p->D.pat(0)),hui_D2M_1(p->D.pat(1)),
+                hui_D2M_1(p->D.pat(2))
+            );
+            for(auto&m0:std::get<0>(d2m)) {
+                for(auto&m1:std::get<1>(d2m)) {
+                    for(auto&m2:std::get<2>(d2m)) {
+                        for(int i = 0; i < 2; ++i) {
+                            zero_struct(u);
+                            u.M.push(m0);
+                            u.M.push(m1);
+                            u.M.push(m2);
+                            u.M.push(hui_P2M(p->P.pat(i)));
+                            u.J.push(hui_P2J(p->P.pat(1-i)));
+                            QCALL();
+                        }
+                    }
+                }
+            }
         }
         if(CHECK_MDJP(0, 2, 2, 0)) {
-
+            auto d2m = std::make_tuple(
+                hui_D2M_1(p->D.pat(0)),hui_D2M_1(p->D.pat(1))
+            );
+            {
+                // 2D+2JK=2M,2J+2JK=2M,2JK=J
+                for(auto&m0:std::get<0>(d2m)) {
+                    for(auto&m1:std::get<1>(d2m)) {
+                        zero_struct(u);
+                        u.M.push(m0);
+                        u.M.push(m1);
+                        u.M.push(hui_J2M(p->J.pat(0)));
+                        u.M.push(hui_J2M(p->J.pat(1)));
+                        u.J.push(hui_J_2JK());
+                        QCALL();
+                    }
+                }
+            }
+            {
+                // 2D+2JK=2M,J+JK=M,3JK=M
+                for(auto&m0:std::get<0>(d2m)) {
+                    for(auto&m1:std::get<1>(d2m)) {
+                        for(int i = 0; i < 2; ++i) {
+                            zero_struct(u);
+                            u.M.push(m0);
+                            u.M.push(m1);
+                            u.M.push(hui_J2M(p->J.pat(i)));
+                            u.M.push(hui_M_3JK());
+                            u.J.push(p->J[1-i]);
+                            QCALL();
+                        }
+                    }
+                }
+            }
         }
         if(CHECK_MDJP(0, 2, 1, 2)) {
-
+            auto d2m = std::make_tuple(
+                hui_D2M_1(p->D.pat(0)),hui_D2M_1(p->D.pat(1))
+            );
+            {
+                // 2D+2JK=2M,J+JK=M,P+2JK=M,P+JK=J
+                for(auto&m0:std::get<0>(d2m)) {
+                    for(auto&m1:std::get<1>(d2m)) {
+                        for(int i = 0; i < 2; ++i) {
+                            zero_struct(u);
+                            u.M.push(m0);
+                            u.M.push(m1);
+                            u.M.push(hui_J2M(p->J.begin()));
+                            u.M.push(hui_P2M(p->P.pat(i)));
+                            u.J.push(hui_P2J(p->P.pat(1-i)));
+                            QCALL();
+                        }
+                    }
+                }
+            }
+            {
+                // 2D+2JK=2M,2P+4JK=2M
+                for(auto&m0:std::get<0>(d2m)) {
+                    for(auto&m1:std::get<1>(d2m)) {
+                        zero_struct(u);
+                        u.M.push(m0);
+                        u.M.push(m1);
+                        u.M.push(hui_P2M(p->P.pat(0)));
+                        u.M.push(hui_P2M(p->P.pat(1)));
+                        u.J.push(p->J[0]);
+                        QCALL();
+                    }
+                }
+            }
         }
         if(CHECK_MDJP(0, 1, 3, 0)) {
-
+            auto d2m = std::make_tuple(
+                hui_D2M_1(p->D.pat(0))
+            );
+            {
+                // D+JK=M,3J+3JK=3M,2JK=J
+                for(auto&m0:std::get<0>(d2m)) {
+                    zero_struct(u);
+                    u.M.push(m0);
+                    u.M.push(hui_J2M(p->J.pat(0)));
+                    u.M.push(hui_J2M(p->J.pat(1)));
+                    u.M.push(hui_J2M(p->J.pat(2)));
+                    u.J.push(hui_J_2JK());
+                    QCALL();
+                }
+            }
+            {
+                // D+JK=M,2J+2JK=2M,3JK=M
+                for(auto&m0:std::get<0>(d2m)) {
+                    for(int i = 0; i < 3; ++i) {
+                        zero_struct(u);
+                        u.M.push(m0);
+                        u.M.push(hui_J2M(p->J.pat((i+1)%3)));
+                        u.M.push(hui_J2M(p->J.pat((i+2)%3)));
+                        u.M.push(hui_M_3JK());
+                        u.J.push(p->J[0]);
+                        QCALL();
+                    }
+                }
+            }
         }
         if(CHECK_MDJP(0, 1, 2, 2)) {
 
