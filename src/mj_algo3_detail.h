@@ -79,11 +79,24 @@ static void print_hui(hu_unit_item* p, std::ostream& os) {
 
 template <int N>
 static void print_hui_array(c_static_array<hu_unit_item, N>* arrp, std::ostream& os) {
+    if (arrp->count == 0) return;
     for(auto& it:*arrp) {
         print_hui(&it, os);
         os << ",";
     }
     os << std::endl;
+}
+
+static void print_hand_card_units(hand_card_units* hcu, std::ostream& os) {
+    print_hui_array(&hcu->M, os);
+    print_hui_array(&hcu->D, os);
+    print_hui_array(&hcu->J, os);
+    print_hui_array(&hcu->P, os);
+}
+
+static void print_hu_card_units(hu_card_units* hui, std::ostream& os) {
+    print_hui_array(&hui->M, os);
+    print_hui_array(&hui->J, os);
 }
 
 // D+1JK=M
@@ -103,4 +116,4 @@ hu_unit_item hui_P2M(hu_unit_item* p);
 int calc_mdjp(hand_card_units* p);
 int get_hu_mdjp_des_4m1j(int joker, int*& des);
 int get_hu_mdjp_des_7j(int joker, int*& des);
-void mix_hu_mdjp_travel(int joker, hand_card_units* p, bool(*func)(hu_card_units* u));
+void mix_hu_mdjp_travel(int joker, hand_card_units* p,void*ud, bool(*func)(hu_card_units* u,void* ud));

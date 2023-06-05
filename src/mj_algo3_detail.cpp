@@ -1,6 +1,8 @@
 #include "mj_algo3_detail.h"
 #include "mj_utils.h"
 #include <tuple>
+#include <sstream>
+#include "doctest.h"
 
 int hui_count(UnitSubType type)
  {
@@ -396,7 +398,7 @@ int get_hu_mdjp_des_7j(int joker, int*& des)
     return -1;
 }
 
-void mix_hu_mdjp_travel(int joker, hand_card_units* p, bool(*func)(hu_card_units* u))
+void mix_hu_mdjp_travel(int joker, hand_card_units* p, void*ud, bool(*func)(hu_card_units* u,void* ud))
 {
     int M = p->M.count;
     int D = p->D.count;
@@ -405,7 +407,7 @@ void mix_hu_mdjp_travel(int joker, hand_card_units* p, bool(*func)(hu_card_units
     int mdjp = calc_mdjp(p);
     hu_card_units u;
 #define CHECK_MDJP(m,d,j,p) MAKE_MDJP_TABLE(m,d,j,p)==mdjp
-#define QCALL()    if(func(&u)) {return;}
+#define QCALL()    if(func(&u,ud)) {return;}
     if(joker == 0) {
         constexpr int jk = 0;
         if(CHECK_MDJP(4,0,1,0)) {
@@ -2263,3 +2265,75 @@ void mix_hu_mdjp_travel(int joker, hand_card_units* p, bool(*func)(hu_card_units
         }
     }
 }
+
+TEST_SUITE_BEGIN("mdjp_all_units");
+TEST_CASE("mdjk_hu_0jk") {
+    // 4M+1J
+    hand_card_units hcu;
+    zero_struct(hcu);
+    hui_init(hcu.M.grap(), {Wan(1),Wan(2),Wan(3)}, UnitType::UIT_M, UnitSubType::M_BIAN);
+    hui_init(hcu.M.grap(), {Wan(3),Wan(4),Wan(5)}, UnitType::UIT_M, UnitSubType::M_ZHONG);
+    hui_init(hcu.M.grap(), {Wan(9),Wan(9),Wan(9)}, UnitType::UIT_M, UnitSubType::M_KEZI);
+    hui_init(hcu.M.grap(), {Wan(7),Wan(7),Wan(7)}, UnitType::UIT_M, UnitSubType::M_KEZI);
+    hui_init(hcu.J.grap(), {Tiao(1), Tiao(1)}, UnitType::UIT_J, UnitSubType::J_19);
+    std::stringstream ss_hcu;
+    print_hand_card_units(&hcu, ss_hcu);
+
+    mix_hu_mdjp_travel(0, &hcu, &ss_hcu,[](hu_card_units* hui, void* ud){
+        std::stringstream* ss_hcu = static_cast<std::stringstream*>(ud);
+        std::stringstream ss_hui;
+        print_hu_card_units(hui, ss_hui);
+        CHECK_EQ(ss_hcu->str(), ss_hui.str());
+        return false;
+    });
+
+    // 7J
+    zero_struct(hcu);
+    hui_init(hcu.J.grap(), {Tiao(1), Tiao(1)}, UnitType::UIT_J, UnitSubType::J_19);
+    hui_init(hcu.J.grap(), {Wan(1), Wan(1)}, UnitType::UIT_J, UnitSubType::J_19);
+    hui_init(hcu.J.grap(), {Dong(1), Dong(1)}, UnitType::UIT_J, UnitSubType::J_19);
+    hui_init(hcu.J.grap(), {Tiao(2), Tiao(2)}, UnitType::UIT_J, UnitSubType::J_28);
+    hui_init(hcu.J.grap(), {Tiao(3), Tiao(3)}, UnitType::UIT_J, UnitSubType::J_ZHONG);
+    hui_init(hcu.J.grap(), {Tiao(4), Tiao(4)}, UnitType::UIT_J, UnitSubType::J_ZHONG);
+    hui_init(hcu.J.grap(), {Tiao(5), Tiao(5)}, UnitType::UIT_J, UnitSubType::J_ZHONG);
+    ss_hcu.str("");
+    print_hand_card_units(&hcu, ss_hcu);
+    mix_hu_mdjp_travel(0, &hcu, &ss_hcu,[](hu_card_units* hui, void* ud){
+        std::stringstream* ss_hcu = static_cast<std::stringstream*>(ud);
+        std::stringstream ss_hui;
+        print_hu_card_units(hui, ss_hui);
+        CHECK_EQ(ss_hcu->str(), ss_hui.str());
+        return false;
+    });
+}
+TEST_CASE("mdjk_hu_1jk") {
+    // 4M+1P
+    hand_card_units hcu;
+    zero_struct(hcu);
+    hui_init(hcu.M.grap(), {Wan(1),Wan(2),Wan(3)}, UnitType::UIT_M, UnitSubType::M_BIAN);
+    hui_init(hcu.M.grap(), {Wan(3),Wan(4),Wan(5)}, UnitType::UIT_M, UnitSubType::M_ZHONG);
+    hui_init(hcu.M.grap(), {Wan(9),Wan(9),Wan(9)}, UnitType::UIT_M, UnitSubType::M_KEZI);
+    hui_init(hcu.M.grap(), {Wan(7),Wan(7),Wan(7)}, UnitType::UIT_M, UnitSubType::M_KEZI);
+    hui_init(hcu.P.grap(), {Tiao(3)}, UnitType::UIT_P, UnitSubType::P_ZHONG);
+
+    mix_hu_mdjp_travel(1, &hcu, nullptr,[](hu_card_units* hui, void* ud){
+        return false;
+    });
+
+}
+TEST_CASE("mdjk_hu_2jk") {
+    
+}
+TEST_CASE("mdjk_hu_3jk") {
+    
+}
+TEST_CASE("mdjk_hu_4jk") {
+    
+}
+TEST_CASE("mdjk_hu_5jk") {
+    
+}
+TEST_CASE("mdjk_hu_6jk") {
+    
+}
+TEST_SUITE_END();

@@ -8,8 +8,9 @@ typedef struct pack_calc_ctx {
     cardidxs* c;
     hand_card_units p;
     int jokerleft;
+    void* ud;
     bool (* complete_func)(pack_calc_ctx*);
-    bool (* travel_func)(hu_card_units* u);
+    bool (* travel_func)(hu_card_units* u, void* ud);
 }pack_calc_ctx;
 
 static bool _complete_canhu_func(pack_calc_ctx* ctx) {
@@ -81,7 +82,7 @@ static bool _complete_travel_func(pack_calc_ctx* ctx) {
     int sz_after = ctx->p.M.count + ctx->p.D.count + ctx->p.J.count + ctx->p.P.count;
     bool res = false;
     if(sz_after) {
-        mix_hu_mdjp_travel(ctx->c->idxs[JOKER_INDEX], &ctx->p, ctx->travel_func);
+        mix_hu_mdjp_travel(ctx->c->idxs[JOKER_INDEX], &ctx->p, ctx->ud, ctx->travel_func);
     }
     if(sz_before == 0) {
         // 还原
@@ -251,7 +252,7 @@ bool canhu_3(cardidxs *c)
     return _pack_func(&ctx);
 }
 
-void travel_all_hu_3(cardidxs *c, bool (*f)(hu_card_units *))
+void travel_all_hu_3(cardidxs *c,void* ud, bool (*f)(hu_card_units *, void*))
 {
     pack_calc_ctx ctx;
     zero_struct(ctx);
@@ -259,6 +260,7 @@ void travel_all_hu_3(cardidxs *c, bool (*f)(hu_card_units *))
     ctx.jokerleft = c->idxs[JOKER_INDEX];
     ctx.complete_func = _complete_travel_func;
     ctx.travel_func = f;
+    ctx.ud = ud;
     _pack_func(&ctx);
 }
 

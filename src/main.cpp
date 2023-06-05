@@ -108,8 +108,8 @@ TEST_CASE("benchmark_travelhu") {
         // print_cardsunit(u, std::cout);
         return false;
     };
-    bool(*f1) (hu_card_units*) = nullptr;
-    f1 = [](hu_card_units* u){
+    bool(*f1) (hu_card_units*, void*) = nullptr;
+    f1 = [](hu_card_units* u, void*){
         return false;
     };
 
@@ -128,7 +128,7 @@ TEST_CASE("benchmark_travelhu") {
 
     TEST_CALL([&](){
         random_test_cards([&](cardidxs* u){
-            travel_all_hu_3(u, f1);
+            travel_all_hu_3(u, nullptr, f1);
             return true;
         });
     });
