@@ -2010,72 +2010,256 @@ void mix_hu_mdjp_travel(int joker, hand_card_units* p, bool(*func)(hu_card_units
             }
         }
         if(CHECK_MDJP(0, 1, 2, 2)) {
-
+            auto d2m = hui_D2M_1(p->D.begin());
+            {
+                // D+JK=M,2J+2JK=M,P+2JK=M,P+JK=J
+                for(auto& m:d2m) {
+                    for(int i = 0; i < 2; ++i) {
+                        zero_struct(u);
+                        u.M.push(m);
+                        u.M.push(hui_J2M(p->J.pat(0)));
+                        u.M.push(hui_J2M(p->J.pat(1)));
+                        u.M.push(hui_P2M(p->P.pat(i)));
+                        u.J.push(hui_P2J(p->P.pat(1-i)));
+                        QCALL();
+                    }
+                }
+            }
+            {
+                // D+JK=M,J+JK=M,2P+4JK=2M
+                for(auto& m:d2m) {
+                    for(int i = 0; i < 2; ++i) {
+                        zero_struct(u);
+                        u.M.push(m);
+                        u.M.push(hui_J2M(p->J.pat(i)));
+                        u.M.push(hui_P2M(p->P.pat(0)));
+                        u.M.push(hui_P2M(p->P.pat(1)));
+                        u.J.push(p->J[1-i]);
+                        QCALL();
+                    }
+                }
+            }
         }
         if(CHECK_MDJP(0, 0, 4, 0)) {
-
+            {
+                // 4J+4JK=4M,2JK=J
+                zero_struct(u);
+                u.M.push(hui_J2M(p->J.pat(0)));
+                u.M.push(hui_J2M(p->J.pat(1)));
+                u.M.push(hui_J2M(p->J.pat(2)));
+                u.M.push(hui_J2M(p->J.pat(3)));
+                u.J.push(hui_J_2JK());
+                QCALL();
+            }
+            {
+                // 3J+3JK=3M,3JK=M
+                for(int i = 0; i < 4; ++i) {
+                    zero_struct(u);
+                    u.M.push(hui_J2M(p->J.pat((i+1)%4)));
+                    u.M.push(hui_J2M(p->J.pat((i+2)%4)));
+                    u.M.push(hui_J2M(p->J.pat((i+3)%4)));
+                    u.M.push(hui_M_3JK());
+                    u.J.push(p->J[i]);
+                    QCALL();
+                }
+            }
         }
         if(CHECK_MDJP(0, 0, 3, 2)) {
-            
+            {
+                // 3J+3JK=3M,P+2JK=M,P+JK=J
+                for(int i = 0; i < 2; ++i) {
+                    zero_struct(u);
+                    u.M.push(hui_J2M(p->J.pat(0)));
+                    u.M.push(hui_J2M(p->J.pat(1)));
+                    u.M.push(hui_J2M(p->J.pat(2)));
+                    u.M.push(hui_P2M(p->P.pat(i)));
+                    u.J.push(hui_P2J(p->P.pat(1-i)));
+                    QCALL();
+                }
+            }
+            {
+                // 2J+2JK=2M,2P+4JK=2M
+                for (size_t i = 0; i < 3; i++)
+                {
+                    zero_struct(u);
+                    u.M.push(hui_J2M(p->J.pat((i+1)%3)));
+                    u.M.push(hui_J2M(p->J.pat((i+2)%3)));
+                    u.M.push(hui_P2M(p->P.pat(0)));
+                    u.M.push(hui_P2M(p->P.pat(1)));
+                    u.J.push(p->J[i]);
+                    QCALL();
+                }
+            }
         }
 
-        // 2M
-        if(CHECK_MDJP(0, 0, 3, 2)) {
-
-        }
-        
         // 7J
+        // 2M+1J
+        if(CHECK_MDJP(2, 0, 1, 0)) {
+            // 2M+6JK=6J
+            zero_struct(u);
+            for(auto&m:p->M) {
+                u.J.push(hui_P2J_1(hui_P(m.idx[0])));
+                u.J.push(hui_P2J_1(hui_P(m.idx[1])));
+                u.J.push(hui_P2J_1(hui_P(m.idx[2])));
+            }
+            u.J.push(p->J[0]);
+            QCALL();
+        }
         // 1M+1D+1J+1P
         if(CHECK_MDJP(1, 1, 1, 1)) {
-
+            // M+3JK=3J,D+2JK=2J,P+JK=J
+            zero_struct(u);
+            u.J.push(hui_P2J_1(hui_P(p->M.begin()->idx[0])));
+            u.J.push(hui_P2J_1(hui_P(p->M.begin()->idx[1])));
+            u.J.push(hui_P2J_1(hui_P(p->M.begin()->idx[2])));
+            u.J.push(hui_P2J_1(hui_P(p->D.begin()->idx[0])));
+            u.J.push(hui_P2J_1(hui_P(p->D.begin()->idx[1])));
+            u.J.push(hui_P2J(p->P.begin()));
+            u.J.push(p->J[0]);
+            QCALL();
         }
         //1M+2J+1P
         if(CHECK_MDJP(1, 0, 2, 1)) {
-
+            // M+3JK=3J,P+JK=J,2JK=J
+            zero_struct(u);
+            u.J.push(hui_P2J_1(hui_P(p->M.begin()->idx[0])));
+            u.J.push(hui_P2J_1(hui_P(p->M.begin()->idx[1])));
+            u.J.push(hui_P2J_1(hui_P(p->M.begin()->idx[2])));
+            u.J.push(hui_P2J(p->P.begin()));
+            u.J.push(hui_J_2JK());
+            u.J = p->J;
+            QCALL();
         }
         // 1M+1J+3P
         if(CHECK_MDJP(1, 0, 1, 3)) {
-
+            // M+3JK=3J,3P+3JK=3J
+            zero_struct(u);
+            u.J.push(hui_P2J_1(hui_P(p->M.begin()->idx[0])));
+            u.J.push(hui_P2J_1(hui_P(p->M.begin()->idx[1])));
+            u.J.push(hui_P2J_1(hui_P(p->M.begin()->idx[2])));
+            u.J.push(hui_P2J(p->P.pat(0)));
+            u.J.push(hui_P2J(p->P.pat(1)));
+            u.J.push(hui_P2J(p->P.pat(2)));
+            u.J.push(p->J[0]);
+            QCALL();
         }
         // 3D+1J
         if(CHECK_MDJP(0, 3, 1, 0)) {
-
+            // 3D+6JK=6J
+            zero_struct(u);
+            u.J = p->J;
+            for(auto&d:p->D) {
+                u.J.push(hui_P2J_1(hui_P(d.idx[0])));
+                u.J.push(hui_P2J_1(hui_P(d.idx[1])));
+            }
+            QCALL();
         }
         // 2D+2J
         if(CHECK_MDJP(0, 2, 2, 0)) {
-
+            // 2D+4JK=4J
+            zero_struct(u);
+            u.J = p->J;
+            for(auto&d:p->D) {
+                u.J.push(hui_P2J_1(hui_P(d.idx[0])));
+                u.J.push(hui_P2J_1(hui_P(d.idx[1])));
+            }
+            QCALL();
         }
         // 2D+1J+2P
         if(CHECK_MDJP(0, 2, 1, 2)) {
-
+            // 2D+4JK=4J,2P+2JK=2J
+            zero_struct(u);
+            u.J = p->J;
+            for(auto&d:p->D) {
+                u.J.push(hui_P2J_1(hui_P(d.idx[0])));
+                u.J.push(hui_P2J_1(hui_P(d.idx[1])));
+            }
+            u.J.push(hui_P2J(p->P.pat(0)));
+            u.J.push(hui_P2J(p->P.pat(1)));
+            QCALL();
         }
         // 1D+2J+2P
         if(CHECK_MDJP(0, 1, 2, 2)) {
-
+            // D+2JK=2J,2P+2JK=2J,2JK=J
+            zero_struct(u);
+            u.J = p->J;
+            for(auto&d:p->D) {
+                u.J.push(hui_P2J_1(hui_P(d.idx[0])));
+                u.J.push(hui_P2J_1(hui_P(d.idx[1])));
+            }
+            u.J.push(hui_P2J(p->P.pat(0)));
+            u.J.push(hui_P2J(p->P.pat(1)));
+            u.J.push(hui_J_2JK());
+            QCALL();
         }
         // 1D+3J
         if(CHECK_MDJP(0, 1, 3, 0)) {
-
+            // D+2JK=2J,4JK=2J
+            zero_struct(u);
+            u.J = p->J;
+            for(auto&d:p->D) {
+                u.J.push(hui_P2J_1(hui_P(d.idx[0])));
+                u.J.push(hui_P2J_1(hui_P(d.idx[1])));
+            }
+            u.J.push(hui_J_2JK());
+            u.J.push(hui_J_2JK());
+            QCALL();
         }
         // 1D+1J+4P
         if(CHECK_MDJP(0, 1, 1, 4)) {
-
+            // D+2JK=2J,4P+4JK=4J
+            zero_struct(u);
+            u.J = p->J;
+            for(auto&d:p->D) {
+                u.J.push(hui_P2J_1(hui_P(d.idx[0])));
+                u.J.push(hui_P2J_1(hui_P(d.idx[1])));
+            }
+            for(auto&p1:p->P) {
+                u.J.push(hui_P2J(&p1));
+            }
+            QCALL();
         }
         // 4J
         if(CHECK_MDJP(0, 0, 4, 0)) {
-
+            // 6JK=3J
+            zero_struct(u);
+            u.J = p->J;
+            u.J.push(hui_J_2JK());
+            u.J.push(hui_J_2JK());
+            u.J.push(hui_J_2JK());
+            QCALL();
         }
         // 3J+2P
         if(CHECK_MDJP(0, 0, 3, 2)) {
-
+            // 2P+2JK=2J,4JK=2J
+            zero_struct(u);
+            u.J = p->J;
+            u.J.push(hui_P2J(p->P.pat(0)));
+            u.J.push(hui_P2J(p->P.pat(1)));
+            u.J.push(hui_J_2JK());
+            u.J.push(hui_J_2JK());
+            QCALL();
         }
         // 2J+4P
         if(CHECK_MDJP(0, 0, 2, 4)) {
-
+            // 4P+4JK=4J,2JK=J
+            zero_struct(u);
+            u.J = p->J;
+            for(auto&p1:p->P) {
+                u.J.push(hui_P2J(&p1));
+            }
+            u.J.push(hui_J_2JK());
+            QCALL();
         }
         // 1J+6P
         if(CHECK_MDJP(0, 0, 1, 6)) {
-
+            // 6P+6JK=6J
+            zero_struct(u);
+            u.J = p->J;
+            for(auto&p1:p->P) {
+                u.J.push(hui_P2J(&p1));
+            }
+            QCALL();
         }
     }
 }
